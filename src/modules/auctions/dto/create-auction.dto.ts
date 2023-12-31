@@ -15,10 +15,10 @@ export class CreateAuctionDto {
   image?: string
 
   @ApiProperty({ required: false })
-  @IsNotEmpty()
+  @IsOptional()
   price: number
 
   @ApiProperty({ required: false })
-  @IsNotEmpty()
+  @IsOptional()
   end_date: Date
 }

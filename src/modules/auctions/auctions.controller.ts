@@ -24,8 +24,8 @@ import { join } from 'path'
 import { isFileExtensionSafe, removeFile, saveImageToStorage } from 'helpers/image-storage'
 import { Express } from 'express'
 
-@ApiTags('auction')
-@Controller('auction')
+@ApiTags('auctions')
+@Controller('auctions')
 export class AuctionsController {
   constructor(private readonly auctionsService: AuctionsService) {}
 
