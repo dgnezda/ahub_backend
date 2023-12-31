@@ -1,12 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, ClassSerializerInterceptor, HttpCode, HttpStatus, UseGuards, Req, Res } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
-import { Public } from 'decorators/public.decorator';
-import { RegisterUserDto } from './dto/register-user.dto';
-import { User } from 'entities/user.entity';
-import { LocalAuthGuard } from './guards/local-auth.guard';
-import { RequestWithUser } from 'interfaces/auth.interface';
-import { Request, Response } from 'express';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Req,
+  Res,
+} from '@nestjs/common'
+import { AuthService } from './auth.service'
+import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
+import { Public } from 'decorators/public.decorator'
+import { RegisterUserDto } from './dto/register-user.dto'
+import { User } from 'entities/user.entity'
+import { LocalAuthGuard } from './guards/local-auth.guard'
+import { RequestWithUser } from 'interfaces/auth.interface'
+import { Request, Response } from 'express'
 
 @ApiTags('auth')
 @Controller('auth')

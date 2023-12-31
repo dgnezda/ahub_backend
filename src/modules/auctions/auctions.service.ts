@@ -1,11 +1,11 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { CreateAuctionDto } from './dto/create-auction.dto';
-import { UpdateAuctionDto } from './dto/update-auction.dto';
-import { AbstractService } from 'modules/common/abstract.service';
-import { InjectRepository } from '@nestjs/typeorm';
-import { AuctionItem } from 'entities/auction-item.entity';
-import { Repository } from 'typeorm';
-import Logging from 'lib/Logging';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common'
+import { CreateAuctionDto } from './dto/create-auction.dto'
+import { UpdateAuctionDto } from './dto/update-auction.dto'
+import { AbstractService } from 'modules/common/abstract.service'
+import { InjectRepository } from '@nestjs/typeorm'
+import { AuctionItem } from 'entities/auction-item.entity'
+import { Repository } from 'typeorm'
+import Logging from 'lib/Logging'
 
 @Injectable()
 export class AuctionsService extends AbstractService {

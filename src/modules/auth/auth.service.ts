@@ -9,7 +9,10 @@ import { RequestWithUser } from 'interfaces/auth.interface'
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService, private jwtService: JwtService) {}
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
 
   async validateUser(email: string, password: string): Promise<User> {
     Logging.info('Validating user...')

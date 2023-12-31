@@ -1,17 +1,17 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Patch, 
-  Param, 
-  Delete, 
-  HttpCode, 
-  HttpStatus, 
-  Query, 
-  UseInterceptors, 
-  UploadedFile, 
-  BadRequestException 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Query,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common'
 import { AuctionsService } from './auctions.service'
 import { CreateAuctionDto } from './dto/create-auction.dto'
@@ -29,7 +29,7 @@ import { Express } from 'express'
 export class AuctionsController {
   constructor(private readonly auctionsService: AuctionsService) {}
 
-  @ApiCreatedResponse({ description: 'List all auctions.'})
+  @ApiCreatedResponse({ description: 'List all auctions.' })
   @ApiBadRequestResponse({ description: 'Error for requesting list of auctions.' })
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -37,7 +37,7 @@ export class AuctionsController {
     return this.auctionsService.paginate(page)
   }
 
-  @ApiCreatedResponse({ description: 'Find auction item by ID.'})
+  @ApiCreatedResponse({ description: 'Find auction item by ID.' })
   @ApiBadRequestResponse({ description: 'Error for requesting auction item by ID.' })
   @Get(':id')
   @HttpCode(HttpStatus.OK)
@@ -45,7 +45,7 @@ export class AuctionsController {
     return this.auctionsService.findById(id)
   }
 
-  @ApiCreatedResponse({ description: 'Creates new auction item.'})
+  @ApiCreatedResponse({ description: 'Creates new auction item.' })
   @ApiBadRequestResponse({ description: 'Error for creating new auction item.' })
   @Post()
   @HttpCode(HttpStatus.CREATED)

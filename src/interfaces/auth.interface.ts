@@ -1,4 +1,4 @@
-import { User } from "entities/user.entity"
+import { User } from 'entities/user.entity'
 import { Request } from 'express'
 
 export interface TokenPayload {

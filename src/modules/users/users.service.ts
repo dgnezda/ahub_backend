@@ -36,7 +36,7 @@ export class UsersService extends AbstractService {
     const { email, password, confirm_password, ...data } = updateUserDto // to use roles add , role_id,   after confirm_pw
     if (user.email !== email && email) {
       user.email = email
-    } 
+    }
     if (password && confirm_password) {
       if (password !== confirm_password) {
         throw new BadRequestException('Passwords do not match')
