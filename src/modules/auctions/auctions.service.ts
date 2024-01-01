@@ -6,7 +6,6 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { AuctionItem } from 'entities/auction-item.entity'
 import { Repository } from 'typeorm'
 import Logging from 'lib/Logging'
-import { UsersService } from 'modules/users/users.service'
 import { v4 as uuidv4 } from 'uuid'
 
 @Injectable()
@@ -15,10 +14,10 @@ export class AuctionsService extends AbstractService {
     super(auctionItemRepository)
   }
 
-  async create(createAuctionDto: CreateAuctionDto, userId): Promise<AuctionItem> {
+  async create(createAuctionDto: CreateAuctionDto): Promise<AuctionItem> {
     const auctionId = uuidv4()
     try {
-      const auctionItem = this.auctionItemRepository.create({...createAuctionDto, user_id: userId, auction_id: auctionId})
+      const auctionItem = this.auctionItemRepository.create({...createAuctionDto, auction_id: auctionId})
       return this.auctionItemRepository.save(auctionItem)
     } catch (err) {
       Logging.error(err)

@@ -22,6 +22,6 @@ export class AuctionItem extends Base {
   max_price: number
 
   @CreateDateColumn()
-  @Column()
+  @Column({ nullable: true })
   end_date: Date
 }

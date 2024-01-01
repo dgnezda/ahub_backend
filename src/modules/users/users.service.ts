@@ -42,7 +42,7 @@ export class UsersService extends AbstractService {
         throw new BadRequestException('Passwords do not match')
       }
       if (await compareHash(password, user.password)) {
-        throw new BadRequestException('New password cannot be tha same as your old password.')
+        throw new BadRequestException('New password cannot be the same as old password.')
       }
       user.password = await hash(password)
     }

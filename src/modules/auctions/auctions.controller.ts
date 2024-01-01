@@ -24,8 +24,9 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { join } from 'path'
 import { isFileExtensionSafe, removeFile, saveImageToStorage } from 'helpers/image-storage'
 import { Express } from 'express'
-import { User } from 'decorators/user.decorator'
+import { UserDecorator } from 'decorators/user.decorator'
 import { AuthGuard } from '@nestjs/passport'
+import { User } from 'entities/user.entity'
 
 @ApiTags('auctions')
 @Controller('auctions')
@@ -51,18 +52,17 @@ export class AuctionsController {
   @ApiCreatedResponse({ description: 'Creates new auction item.' })
   @ApiBadRequestResponse({ description: 'Error for creating new auction item.' })
   @Post()
-  @UseGuards(AuthGuard('local'))
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createAuctionDto: CreateAuctionDto, @User() user): Promise<AuctionItem> {
-    return this.auctionsService.create(createAuctionDto, user.id)
+  async create(@Body() createAuctionDto: CreateAuctionDto): Promise<AuctionItem> {
+    return this.auctionsService.create(createAuctionDto)
   }
 
-  @ApiCreatedResponse({ description: 'Uploads new product image.' })
-  @ApiBadRequestResponse({ description: 'Error for uploading new product image.' })
+  @ApiCreatedResponse({ description: 'Uploads new auction image.' })
+  @ApiBadRequestResponse({ description: 'Error for uploading new auction image.' })
   @Post('upload/:id')
   @UseInterceptors(FileInterceptor('image', saveImageToStorage))
   @HttpCode(HttpStatus.CREATED)
-  async upload(@UploadedFile() file: Express.Multer.File, @Param('id') productId: string): Promise<AuctionItem> {
+  async upload(@UploadedFile() file: Express.Multer.File, @Param('id') auctionId: string): Promise<AuctionItem> {
     const filename = file?.filename
 
     if (!filename) throw new BadRequestException('File must be a png, jpg/jpeg')
@@ -70,7 +70,7 @@ export class AuctionsController {
     const imagesFolderPath = join(process.cwd(), 'files')
     const fullImagePath = join(imagesFolderPath + '/' + file.filename)
     if (await isFileExtensionSafe(fullImagePath)) {
-      return this.auctionsService.updateAuctionImage(productId, filename)
+      return this.auctionsService.updateAuctionImage(auctionId, filename)
     }
     removeFile(fullImagePath)
     throw new BadRequestException('File content does not match extension!')

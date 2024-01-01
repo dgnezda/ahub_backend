@@ -38,7 +38,6 @@ GET http://localhost:8080/auth HTTP/1.1
 ### POST /auth/signout
 POST http://localhost:8080/auth/signout HTTP/1.1
 
-
 ### GET /permissions
 GET http://localhost:8080/permissions
 
@@ -47,23 +46,25 @@ POST http://localhost:8080/permissions HTTP/1.1
 Content-Type: application/json
 
 {
-  	"name": "create_auction"
+  	"name": "bid_auctions"
 }
 
+### DELETE /permissions/:id
+DELETE http://localhost:8080/permissions/3c63cb74-d88e-4c03-a6d1-d6de1648e8e4 HTTP/1.1
 
 ### GET /roles
 GET http://localhost:8080/roles HTTP/1.1
 
 ### DELETE /roles/:id
-DELETE http://localhost:8080/roles/b44acc8c-7295-4a73-b53c-d3a126ab080a HTTP/1.1
+DELETE http://localhost:8080/roles/471ec13d-413e-485a-9e54-5f8fbc5725ed HTTP/1.1
 
 ### POST /roles
 POST http://localhost:8080/roles HTTP/1.1
 Content-Type: application/json
 
 {
-  	"name": "Admin",
-	"permissions": ["a4374282-b334-44c0-8fa9-3dfd993245e8"]
+  	"name": "Editor",
+	"permissions": ["e8e72623-92a7-405a-9fea-3f259ade63f9", "cba91e6d-fc5e-4ed6-95e1-15c3343953e8", "83c8cb5e-2eaf-4063-ab08-ea479b0835d3", "613e3b36-49a8-4e3c-8dc9-fe4b6d5a4a78", "b2a936b7-5aa6-400e-8bb4-08d512f6c48b"]
 }
 
 ### PATCH /roles/:id
@@ -74,3 +75,19 @@ Content-Type: application/json
   	"name": "Admin",
 	"permissions": ["5a89f68e-4445-40e3-be48-77568df98dab","410a4ea4-9ace-47c4-8025-61047e34fd46"]
 }
+
+### GET /auctions
+GET http://localhost:8080/auctions
+
+### POST /auctions
+POST http://localhost:8080/auctions HTTP/1.1
+Content-Type: application/json
+
+{
+  	"title": "Fancy Chair",
+	"description": "It is really fancy",
+	"price": 17
+}
+
+### DELETE /auctions/:id
+DELETE http://localhost:8080/auctions/3c63cb74-d88e-4c03-a6d1-d6de1648e8e4 HTTP/1.1
