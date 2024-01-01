@@ -4,6 +4,12 @@ import { Base } from './base.entity'
 @Entity()
 export class AuctionItem extends Base {
   @Column()
+  user_id: string
+
+  @Column()
+  auction_id: string
+
+  @Column()
   title: string
 
   @Column()
@@ -13,7 +19,7 @@ export class AuctionItem extends Base {
   image: string
 
   @Column()
-  price: number
+  max_price: number
 
   @CreateDateColumn()
   @Column()

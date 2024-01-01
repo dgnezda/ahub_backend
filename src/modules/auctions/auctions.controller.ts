@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common'
 import { AuctionsService } from './auctions.service'
 import { CreateAuctionDto } from './dto/create-auction.dto'
@@ -23,6 +24,8 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { join } from 'path'
 import { isFileExtensionSafe, removeFile, saveImageToStorage } from 'helpers/image-storage'
 import { Express } from 'express'
+import { User } from 'decorators/user.decorator'
+import { AuthGuard } from '@nestjs/passport'
 
 @ApiTags('auctions')
 @Controller('auctions')
@@ -48,9 +51,10 @@ export class AuctionsController {
   @ApiCreatedResponse({ description: 'Creates new auction item.' })
   @ApiBadRequestResponse({ description: 'Error for creating new auction item.' })
   @Post()
+  @UseGuards(AuthGuard('local'))
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createAuctionDto: CreateAuctionDto): Promise<AuctionItem> {
-    return this.auctionsService.create(createAuctionDto)
+  async create(@Body() createAuctionDto: CreateAuctionDto, @User() user): Promise<AuctionItem> {
+    return this.auctionsService.create(createAuctionDto, user.id)
   }
 
   @ApiCreatedResponse({ description: 'Uploads new product image.' })
