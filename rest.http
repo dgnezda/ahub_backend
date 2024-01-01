@@ -1,0 +1,76 @@
+### GET /
+GET http://localhost:8080 HTTP/1.1
+
+### POST /auth/register
+POST http://localhost:8080/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+	"first_name": "John",
+  	"email": "john@gmail.com",
+  	"password": "John123!",
+  	"confirm_password": "John123!"
+}
+
+### POST /auth/login
+POST http://localhost:8080/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  	"email": "john@mail.com",
+  	"password": "john123!@#"
+}
+
+### GET /users
+http://localhost:8080/users HTTP/1.1
+
+### PATCH /users/:id
+PATCH http://localhost:8080/users/b3ff6dc0-d784-4006-9284-d67332d2ce6a HTTP/1.1
+Content-Type: application/json
+
+{
+  	"role_id": "8988df66-f865-4c70-805e-5c21ad8be521"
+}
+
+### GET /auth
+GET http://localhost:8080/auth HTTP/1.1
+
+### POST /auth/signout
+POST http://localhost:8080/auth/signout HTTP/1.1
+
+
+### GET /permissions
+GET http://localhost:8080/permissions
+
+### POST /permissions
+POST http://localhost:8080/permissions HTTP/1.1
+Content-Type: application/json
+
+{
+  	"name": "create_auction"
+}
+
+
+### GET /roles
+GET http://localhost:8080/roles HTTP/1.1
+
+### DELETE /roles/:id
+DELETE http://localhost:8080/roles/b44acc8c-7295-4a73-b53c-d3a126ab080a HTTP/1.1
+
+### POST /roles
+POST http://localhost:8080/roles HTTP/1.1
+Content-Type: application/json
+
+{
+  	"name": "Admin",
+	"permissions": ["a4374282-b334-44c0-8fa9-3dfd993245e8"]
+}
+
+### PATCH /roles/:id
+PATCH http://localhost:8080/roles/8988df66-f865-4c70-805e-5c21ad8be521 HTTP/1.1
+Content-Type: application/json
+
+{
+  	"name": "Admin",
+	"permissions": ["5a89f68e-4445-40e3-be48-77568df98dab","410a4ea4-9ace-47c4-8025-61047e34fd46"]
+}
