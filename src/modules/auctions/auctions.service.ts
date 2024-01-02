@@ -15,9 +15,8 @@ export class AuctionsService extends AbstractService {
   }
 
   async create(createAuctionDto: CreateAuctionDto): Promise<AuctionItem> {
-    const auctionId = uuidv4()
     try {
-      const auctionItem = this.auctionItemRepository.create({...createAuctionDto, auction_id: auctionId})
+      const auctionItem = this.auctionItemRepository.create(createAuctionDto)
       return this.auctionItemRepository.save(auctionItem)
     } catch (err) {
       Logging.error(err)
