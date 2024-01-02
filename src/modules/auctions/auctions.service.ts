@@ -6,7 +6,6 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { AuctionItem } from 'entities/auction-item.entity'
 import { Repository } from 'typeorm'
 import Logging from 'lib/Logging'
-import { v4 as uuidv4 } from 'uuid'
 
 @Injectable()
 export class AuctionsService extends AbstractService {
@@ -20,7 +19,7 @@ export class AuctionsService extends AbstractService {
       return this.auctionItemRepository.save(auctionItem)
     } catch (err) {
       Logging.error(err)
-      throw new BadRequestException('Something went wrong while creating  a new auction item.')
+      throw new BadRequestException('Something went wrong while creating a new auction item.')
     }
   }
 
