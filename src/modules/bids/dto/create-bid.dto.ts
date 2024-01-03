@@ -1,8 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsOptional } from "class-validator";
 
 export class CreateBidDto {
     @ApiProperty({ required: true })
     @IsNotEmpty()
     bid_price: number
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    user_id: string
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    auction_item_id: string
 }

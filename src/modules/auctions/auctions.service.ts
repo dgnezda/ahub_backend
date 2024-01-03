@@ -6,16 +6,22 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { AuctionItem } from 'entities/auction-item.entity'
 import { Repository } from 'typeorm'
 import Logging from 'lib/Logging'
+import { User } from 'entities/user.entity'
 
 @Injectable()
 export class AuctionsService extends AbstractService {
-  constructor(@InjectRepository(AuctionItem) private readonly auctionItemRepository: Repository<AuctionItem>) {
+  constructor(
+    @InjectRepository(AuctionItem) private readonly auctionItemRepository: Repository<AuctionItem>,
+    @InjectRepository(User) private userRepository: Repository<User>,
+  ) {
     super(auctionItemRepository)
   }
 
   async create(createAuctionDto: CreateAuctionDto): Promise<AuctionItem> {
     try {
+      const user = await this.userRepository.findOneBy({ id: createAuctionDto.user_id })
       const auctionItem = this.auctionItemRepository.create(createAuctionDto)
+      user.auctions.push(auctionItem)
       return this.auctionItemRepository.save(auctionItem)
     } catch (err) {
       Logging.error(err)
