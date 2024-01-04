@@ -8,11 +8,11 @@ export class Bid extends Base {
     @Column()
     bid_price: number
 
-    @ManyToOne(() => AuctionItem, auctionItem => auctionItem.bids)
+    @ManyToOne(() => AuctionItem, { onDelete: 'CASCADE'}) //auctionItem => auctionItem.bids, 
     @JoinColumn({ name: 'auction_item_id' })
     auction_item: AuctionItem
 
-    @ManyToOne(() => User, user => user.bids)
+    @ManyToOne(() => User, { onDelete: 'CASCADE'}) // , user => user.bids
     @JoinColumn({ name: 'user_id'})
     user: User
 }

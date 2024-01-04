@@ -5,7 +5,7 @@ import { Bid } from './bid.entity'
 
 @Entity()
 export class AuctionItem extends Base {
-  @ManyToOne(() => User, user => user.auctions)
+  @ManyToOne(() => User, { onDelete: 'CASCADE'}) //, user => user.auctions
   @JoinColumn({ name: 'user_id'})
   user: User
 

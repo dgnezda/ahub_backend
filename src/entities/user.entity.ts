@@ -4,6 +4,7 @@ import { Base } from './base.entity'
 import { Role } from './role.entity'
 import { AuctionItem } from './auction-item.entity'
 import { Bid } from './bid.entity'
+import { ApiProperty } from '@nestjs/swagger'
 
 @Entity()
 export class User extends Base {
@@ -26,9 +27,10 @@ export class User extends Base {
   @ManyToOne(() => Role, { onDelete: 'SET NULL' })
   role: Role | null
 
-  @OneToMany(() => AuctionItem, auctionItem => auctionItem.id)
+  @OneToMany(() => AuctionItem, auctionItem => auctionItem.id )
   auctions: AuctionItem[]
 
-  @OneToMany(() => Bid, bid => bid.user)
+  @ApiProperty({ isArray: true, type: Bid })
+  @OneToMany(() => Bid, bid => bid.user )
   bids: Bid[]
 }

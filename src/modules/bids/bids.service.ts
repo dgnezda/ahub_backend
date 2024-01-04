@@ -11,21 +11,30 @@ import { AuctionItem } from 'entities/auction-item.entity'
 @Injectable()
 export class BidsService extends AbstractService {
   constructor(
-    @InjectRepository(Bid) private bidRepository: Repository<Bid>,
-    @InjectRepository(User) private userRepository: Repository<User>,
-    @InjectRepository(AuctionItem) private auctionItemRepository: Repository<AuctionItem>
+    @InjectRepository(Bid) private bidsRepository: Repository<Bid>,
+    @InjectRepository(User) private usersRepository: Repository<User>,
+    @InjectRepository(AuctionItem) private auctionItemsRepository: Repository<AuctionItem>
     ) {
-    super(bidRepository)
+    super(bidsRepository)
   }
 
-  async create(createBidDto: CreateBidDto): Promise<Bid> {
+  async create(createBidDto: CreateBidDto, userId: string, auctionItemId: string): Promise<Bid> {
     try {
-      const user = await this.userRepository.findOneBy({id: createBidDto.user_id})
-      const auctionItem = await this.auctionItemRepository.findOneBy({ id: createBidDto.auction_item_id})
-      const bid = this.bidRepository.create(createBidDto)
-      this.userRepository.save({...user, ...bid})
-      this.auctionItemRepository.save({...auctionItem, ...bid})
-      return this.bidRepository.save(bid)
+      const user = (await this.usersRepository.findOne({ where: { id: userId } })) as User
+      const auctionItem = (await this.auctionItemsRepository.findOne({ where: { id: auctionItemId } })) as AuctionItem
+      const bid = this.bidsRepository.create({...createBidDto, user: user, auction_item: auctionItem })
+      if (bid.bid_price >= auctionItem.starting_price || bid.bid_price > auctionItem.price) {
+        if (!user.bids) user.bids = []
+        if (!auctionItem.bids) auctionItem.bids = []
+        user.bids.push(bid)
+        auctionItem.bids.push(bid)
+        auctionItem.price = bid.bid_price
+        this.usersRepository.save(user)
+        this.auctionItemsRepository.save(auctionItem)
+        return this.bidsRepository.save(bid)
+      } else {
+        throw new Error('Your bid amount must be larger than current bid amount!')
+      }
     } catch (err) {
       Logging.error(err)
       throw new BadRequestException('Something went wrong while creating a new bid.')

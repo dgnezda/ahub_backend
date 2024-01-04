@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Bid } from 'entities/bid.entity';
 import { User } from 'entities/user.entity';
 import { AuctionItem } from 'entities/auction-item.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -13,6 +14,6 @@ import { AuctionItem } from 'entities/auction-item.entity';
     TypeOrmModule.forFeature([AuctionItem]),
   ],
   controllers: [BidsController],
-  providers: [BidsService],
+  providers: [BidsService, JwtService],
 })
 export class BidsModule {}

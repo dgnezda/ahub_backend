@@ -1,14 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty, IsOptional } from 'class-validator'
+import { Bid } from 'entities/bid.entity'
 
 export class CreateAuctionDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   title: string
-  
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
-  user_id: string
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
@@ -25,4 +22,8 @@ export class CreateAuctionDto {
   @ApiProperty({ required: false }) // NEEDS TO BE REQUIRED OR PRE-SET
   @IsOptional()
   end_date?: Date
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  bids?: Bid[] = []
 }

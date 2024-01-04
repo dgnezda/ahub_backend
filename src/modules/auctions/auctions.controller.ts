@@ -12,7 +12,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
-  UseGuards,
+  Req,
 } from '@nestjs/common'
 import { AuctionsService } from './auctions.service'
 import { CreateAuctionDto } from './dto/create-auction.dto'
@@ -21,12 +21,9 @@ import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swag
 import { PaginatedResult } from 'modules/common/interfaces/paginated-result.interface'
 import { AuctionItem } from 'entities/auction-item.entity'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { join } from 'path'
+import { join, parse } from 'path'
 import { isFileExtensionSafe, removeFile, saveImageToStorage } from 'helpers/image-storage'
-import { Express } from 'express'
-import { UserDecorator } from 'decorators/user.decorator'
-import { AuthGuard } from '@nestjs/passport'
-import { User } from 'entities/user.entity'
+import { Express, Request } from 'express'
 
 @ApiTags('auctions')
 @Controller('auctions')
@@ -53,8 +50,11 @@ export class AuctionsController {
   @ApiBadRequestResponse({ description: 'Error for creating new auction item.' })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createAuctionDto: CreateAuctionDto): Promise<AuctionItem> {
-    return this.auctionsService.create(createAuctionDto)
+  async create(@Body() createAuctionDto: CreateAuctionDto, @Req() request: Request): Promise<AuctionItem> {
+    console.log(request.headers.cookie['user_id'])
+    const cookie = parse(request.headers.cookie || '')
+    const userId = cookie['user_id']
+    return this.auctionsService.create(createAuctionDto, userId)
   }
 
   @ApiCreatedResponse({ description: 'Uploads new auction image.' })

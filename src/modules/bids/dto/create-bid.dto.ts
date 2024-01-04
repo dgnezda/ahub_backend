@@ -8,9 +8,5 @@ export class CreateBidDto {
 
     @ApiProperty({ required: false })
     @IsOptional()
-    user_id: string
-
-    @ApiProperty({ required: false })
-    @IsOptional()
     auction_item_id: string
 }

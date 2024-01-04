@@ -17,11 +17,10 @@ export class AuctionsService extends AbstractService {
     super(auctionItemRepository)
   }
 
-  async create(createAuctionDto: CreateAuctionDto): Promise<AuctionItem> {
+  async create(createAuctionDto: CreateAuctionDto, userId: string): Promise<AuctionItem> {
     try {
-      const user = await this.userRepository.findOneBy({ id: createAuctionDto.user_id })
-      const auctionItem = this.auctionItemRepository.create(createAuctionDto)
-      user.auctions.push(auctionItem)
+      const user = await this.userRepository.findOne({ where: { id: userId } })
+      const auctionItem = this.auctionItemRepository.create({...createAuctionDto, user: user })
       return this.auctionItemRepository.save(auctionItem)
     } catch (err) {
       Logging.error(err)

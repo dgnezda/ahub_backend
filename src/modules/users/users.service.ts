@@ -24,6 +24,8 @@ export class UsersService extends AbstractService {
     }
     try {
       const newUser = this.usersRepository.create({ ...createUserDto }) // to use roles add , role: { id: createUserDto.role_id }  after ...createUserDto
+      newUser.auctions = []
+      newUser.bids = []
       return this.usersRepository.save(newUser)
     } catch (err) {
       Logging.error(error)
