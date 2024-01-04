@@ -8,6 +8,7 @@ import { DatabaseModule } from 'modules/database/database.module'
 import { LoggerMiddleware } from 'middleware/logger.middleware'
 import { RolesModule } from './roles/roles.module'
 import { PermissionsModule } from './permissions/permissions.module'
+import { BidsModule } from './bids/bids.module'
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { PermissionsModule } from './permissions/permissions.module'
     AuthModule,
     AuctionsModule,
     RolesModule,
-    PermissionsModule
+    PermissionsModule,
+    BidsModule
   ],
   controllers: [],
   providers: [],

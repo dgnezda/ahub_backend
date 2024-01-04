@@ -6,22 +6,25 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { AuctionItem } from 'entities/auction-item.entity'
 import { Repository } from 'typeorm'
 import Logging from 'lib/Logging'
-import { v4 as uuidv4 } from 'uuid'
+import { User } from 'entities/user.entity'
 
 @Injectable()
 export class AuctionsService extends AbstractService {
-  constructor(@InjectRepository(AuctionItem) private readonly auctionItemRepository: Repository<AuctionItem>) {
+  constructor(
+    @InjectRepository(AuctionItem) private readonly auctionItemRepository: Repository<AuctionItem>,
+    @InjectRepository(User) private userRepository: Repository<User>,
+  ) {
     super(auctionItemRepository)
   }
 
-  async create(createAuctionDto: CreateAuctionDto): Promise<AuctionItem> {
-    const auctionId = uuidv4()
+  async create(createAuctionDto: CreateAuctionDto, userId: string): Promise<AuctionItem> {
     try {
-      const auctionItem = this.auctionItemRepository.create({...createAuctionDto, auction_id: auctionId})
+      const user = await this.userRepository.findOne({ where: { id: userId } })
+      const auctionItem = this.auctionItemRepository.create({...createAuctionDto, user: user })
       return this.auctionItemRepository.save(auctionItem)
     } catch (err) {
       Logging.error(err)
-      throw new BadRequestException('Something went wrong while creating  a new auction item.')
+      throw new BadRequestException('Something went wrong while creating a new auction item.')
     }
   }
 

@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsEmail, IsNotEmpty, IsOptional, Matches } from 'class-validator'
 import { Match } from 'decorators/match.decorator'
+import { AuctionItem } from 'entities/auction-item.entity'
+import { Bid } from 'entities/bid.entity'
 
 export class CreateUserDto {
   @ApiProperty({ required: false })
@@ -32,4 +34,14 @@ export class CreateUserDto {
   @IsNotEmpty()
   @Match(CreateUserDto, (field) => field.password, { message: 'Passwords do not match.' })
   confirm_password: string
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  bids?: Bid[] = []
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  auctions?: AuctionItem[] = []
+
+
 }
