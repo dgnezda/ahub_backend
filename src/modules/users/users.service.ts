@@ -23,7 +23,7 @@ export class UsersService extends AbstractService {
       throw new BadRequestException(`User with email ${createUserDto.email} already exists.`)
     }
     try {
-      const newUser = this.usersRepository.create({ ...createUserDto }) // to use roles add , role: { id: createUserDto.role_id }  after ...createUserDto
+      const newUser = this.usersRepository.create({ ...createUserDto, role: { id: createUserDto.role_id } })
       newUser.auctions = []
       newUser.bids = []
       return this.usersRepository.save(newUser)
@@ -35,7 +35,7 @@ export class UsersService extends AbstractService {
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = (await this.findById(id)) as User
-    const { email, password, confirm_password, ...data } = updateUserDto // to use roles add , role_id,   after confirm_pw
+    const { email, password, confirm_password, role_id, ...data } = updateUserDto 
     if (user.email !== email && email) {
       user.email = email
     }
@@ -48,9 +48,9 @@ export class UsersService extends AbstractService {
       }
       user.password = await hash(password)
     }
-    // if (role_id) {
-    //   user.role = { ...user.role, id: role_id }
-    // }
+    if (role_id) {
+      user.role = { ...user.role, id: role_id }
+    }
     try {
       Object.entries(data).map((entry) => {
         user[entry[0]] = entry[1]

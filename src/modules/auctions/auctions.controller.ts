@@ -13,6 +13,7 @@ import {
   UploadedFile,
   BadRequestException,
   Req,
+  UseGuards,
 } from '@nestjs/common'
 import { AuctionsService } from './auctions.service'
 import { CreateAuctionDto } from './dto/create-auction.dto'
@@ -24,6 +25,7 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { join, parse } from 'path'
 import { isFileExtensionSafe, removeFile, saveImageToStorage } from 'helpers/image-storage'
 import { Express, Request } from 'express'
+import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard'
 
 @ApiTags('auctions')
 @Controller('auctions')
@@ -33,6 +35,7 @@ export class AuctionsController {
   @ApiCreatedResponse({ description: 'List all auctions.' })
   @ApiBadRequestResponse({ description: 'Error for requesting list of auctions.' })
   @Get()
+  // @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async findAll(@Query('page') page: number): Promise<PaginatedResult> {
     return this.auctionsService.paginate(page)

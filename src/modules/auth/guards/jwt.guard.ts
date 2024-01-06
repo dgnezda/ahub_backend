@@ -21,7 +21,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     try {
       const access_token = request.cookies['access_token']
-      return !!this.jwtService.verify(access_token) // !! before this.jwt... will convert output og jwtService ... to true/false
+      request.user = this.jwtService.verify(access_token)
+      return true
     } catch (err) {
       return false
     }
