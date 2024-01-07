@@ -26,16 +26,25 @@ import { join, parse } from 'path'
 import { isFileExtensionSafe, removeFile, saveImageToStorage } from 'helpers/image-storage'
 import { Express, Request } from 'express'
 import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard'
+import { Public } from 'decorators/public.decorator'
+import { GetUserId } from 'decorators/get-user-id.decorator'
+import { Bid } from 'entities/bid.entity'
+import { BidsService } from 'modules/bids/bids.service'
+import { UsersService } from 'modules/users/users.service'
 
 @ApiTags('auctions')
 @Controller('auctions')
 export class AuctionsController {
-  constructor(private readonly auctionsService: AuctionsService) {}
+  constructor(
+    private readonly auctionsService: AuctionsService,
+    private readonly bidsService: BidsService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @ApiCreatedResponse({ description: 'List all auctions.' })
   @ApiBadRequestResponse({ description: 'Error for requesting list of auctions.' })
   @Get()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async findAll(@Query('page') page: number): Promise<PaginatedResult> {
     return this.auctionsService.paginate(page)
@@ -51,12 +60,10 @@ export class AuctionsController {
 
   @ApiCreatedResponse({ description: 'Creates new auction item.' })
   @ApiBadRequestResponse({ description: 'Error for creating new auction item.' })
+  @UseGuards(JwtAuthGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createAuctionDto: CreateAuctionDto, @Req() request: Request): Promise<AuctionItem> {
-    console.log(request.headers.cookie['user_id'])
-    const cookie = parse(request.headers.cookie || '')
-    const userId = cookie['user_id']
+  async create(@Body() createAuctionDto: CreateAuctionDto, @GetUserId() userId: string): Promise<AuctionItem> {
     return this.auctionsService.create(createAuctionDto, userId)
   }
 
@@ -93,5 +100,32 @@ export class AuctionsController {
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string): Promise<AuctionItem> {
     return this.auctionsService.remove(id)
+  }
+
+  // Helper functions
+
+  @ApiCreatedResponse({ description: 'List all active auctions.' })
+  @ApiBadRequestResponse({ description: 'Error for requesting list of active auctions.' })
+  @Get('active')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  async findAllActiveAuctions(@Query('page') page: number, status: boolean): Promise<PaginatedResult> {
+    return this.auctionsService.findBy({ where: { 'is_active': true } })
+  }
+
+  @ApiCreatedResponse({ description: 'Find winning bid for auction item by ID.' })
+  @ApiBadRequestResponse({ description: 'Error for finding winning bid for auction item by ID.' })
+  @Get('winning-bid/:id')
+  @HttpCode(HttpStatus.OK)
+  async getWinningBid(@Param('id') id: string): Promise<Bid> {
+    return this.auctionsService.getWinningBid(id)
+  }
+
+  @ApiCreatedResponse({ description: 'Find auction item by ID.' })
+  @ApiBadRequestResponse({ description: 'Error for requesting auction item by ID.' })
+  @Get('all-bids/:id')
+  @HttpCode(HttpStatus.OK)
+  async getAllBids(@Param('id') id: string): Promise<Bid[]> {
+    return this.auctionsService.getAllBids(id)
   }
 }

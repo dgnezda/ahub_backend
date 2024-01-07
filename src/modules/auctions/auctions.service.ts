@@ -7,21 +7,24 @@ import { AuctionItem } from 'entities/auction-item.entity'
 import { Repository } from 'typeorm'
 import Logging from 'lib/Logging'
 import { User } from 'entities/user.entity'
+import { Cron } from '@nestjs/schedule'
+import { Bid } from 'entities/bid.entity'
 
 @Injectable()
 export class AuctionsService extends AbstractService {
   constructor(
-    @InjectRepository(AuctionItem) private readonly auctionItemRepository: Repository<AuctionItem>,
-    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(AuctionItem) private readonly auctionItemsRepository: Repository<AuctionItem>,
+    @InjectRepository(User) private usersRepository: Repository<User>,
+    @InjectRepository(Bid) private bidsRepository: Repository<Bid>,
   ) {
-    super(auctionItemRepository)
+    super(auctionItemsRepository)
   }
 
   async create(createAuctionDto: CreateAuctionDto, userId: string): Promise<AuctionItem> {
     try {
-      const user = await this.userRepository.findOne({ where: { id: userId } })
-      const auctionItem = this.auctionItemRepository.create({...createAuctionDto, user: user })
-      return this.auctionItemRepository.save(auctionItem)
+      const user = await this.usersRepository.findOne({ where: { id: userId } })
+      const auctionItem = this.auctionItemsRepository.create({...createAuctionDto, user: user })
+      return this.auctionItemsRepository.save(auctionItem)
     } catch (err) {
       Logging.error(err)
       throw new BadRequestException('Something went wrong while creating a new auction item.')
@@ -35,7 +38,7 @@ export class AuctionsService extends AbstractService {
       auctionItem.description = updateAuctionDto.description
       auctionItem.image = updateAuctionDto.image
       auctionItem.end_date = updateAuctionDto.end_date
-      return this.auctionItemRepository.save(auctionItem)
+      return this.auctionItemsRepository.save(auctionItem)
     } catch (err) {
       Logging.error(err)
       throw new InternalServerErrorException('Something went wrong while updating the auction item')
@@ -45,5 +48,32 @@ export class AuctionsService extends AbstractService {
   async updateAuctionImage(id: string, image: string): Promise<AuctionItem> {
     const auctionItem = await this.findById(id)
     return this.update(auctionItem.id, { ...auctionItem, image })
+  }
+
+  async updateActiveState(): Promise<void> {
+    const currentDate = new Date()
+    await this.auctionItemsRepository
+      .createQueryBuilder()
+      .update(AuctionItem)
+      .set({ is_active: false })
+      .where('end_date < :currentDate', { currentDate })
+      .execute()
+  }
+
+  async getAllBids(id: string): Promise<Bid[]> {
+    const auction = await this.auctionItemsRepository.findOne({ where: { id: id } })
+    return auction.bids
+  }
+
+  async getWinningBid(id: string): Promise<Bid> {
+    const auction = await this.auctionItemsRepository.findOne({ where: { id: id } })
+    const winningBid = auction.bids.find((bid) => bid.bid_price === auction.price )
+    return winningBid
+  }
+
+  @Cron('0 * * * * *')
+  handleCron() {
+    this.updateActiveState()
+    console.log('Active state of AuctionItems updated. I do this once every 60s.'); 
   }
 }

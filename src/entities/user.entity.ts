@@ -27,8 +27,8 @@ export class User extends Base {
   @ManyToOne(() => Role, { onDelete: 'SET NULL' })
   role: Role | null
 
-  @OneToMany(() => AuctionItem, auctionItem => auctionItem.id )
-  auctions: AuctionItem[]
+  @OneToMany(() => AuctionItem, auctionItem => auctionItem.id ) // auctions => user_auctions!
+  user_auctions: AuctionItem[]
 
   @ApiProperty({ isArray: true, type: Bid })
   @OneToMany(() => Bid, bid => bid.user )

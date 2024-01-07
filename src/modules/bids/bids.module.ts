@@ -5,8 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Bid } from 'entities/bid.entity';
 import { User } from 'entities/user.entity';
 import { AuctionItem } from 'entities/auction-item.entity';
-import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard';
-import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [

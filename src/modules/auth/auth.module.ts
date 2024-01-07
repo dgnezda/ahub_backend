@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common'
-import { ConfigModule, ConfigService } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
@@ -20,7 +19,7 @@ dotenv.config({ path: `.env.${process.env.STAGE}`})
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: `${process.env.JWT_SECRET_EXPIRES}`}
+      signOptions: { expiresIn: `${process.env.JWT_SECRET_EXPIRES}s`}
     }),
   ],
   controllers: [AuthController],

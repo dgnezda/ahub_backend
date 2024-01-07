@@ -10,10 +10,15 @@ import { compareHash, hash } from '../../utils/bcrypt'
 
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
+import { Bid } from 'entities/bid.entity'
+import { AuctionsService } from 'modules/auctions/auctions.service'
 
 @Injectable()
 export class UsersService extends AbstractService {
-  constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {
+  constructor(
+    @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    private readonly auctionsService: AuctionsService,
+    ) {
     super(usersRepository)
   }
 
@@ -24,7 +29,7 @@ export class UsersService extends AbstractService {
     }
     try {
       const newUser = this.usersRepository.create({ ...createUserDto, role: { id: createUserDto.role_id } })
-      newUser.auctions = []
+      newUser.user_auctions = []
       newUser.bids = []
       return this.usersRepository.save(newUser)
     } catch (err) {

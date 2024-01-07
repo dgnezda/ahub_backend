@@ -12,6 +12,7 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
@@ -23,12 +24,20 @@ import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swag
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UsersService } from './users.service'
+import { Bid } from 'entities/bid.entity'
+import { AuctionsService } from 'modules/auctions/auctions.service'
+import { GetUser } from 'decorators/get-user.decorator'
+import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard'
+import { AuctionItem } from 'entities/auction-item.entity'
 
 @ApiTags('users')
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly auctionsService: AuctionsService,
+  ) {}
 
   @ApiCreatedResponse({ description: 'List all users.' })
   @ApiBadRequestResponse({ description: 'Error for list of users.' })
@@ -81,4 +90,33 @@ export class UsersController {
   async remove(@Param('id') id: string): Promise<User> {
     return this.usersService.remove(id)
   }
+
+  @ApiCreatedResponse({ description: 'Get all bids for user.' })
+  @ApiBadRequestResponse({ description: 'Error for getting bids for user.' })
+  @Get('bids/:id')
+  @HttpCode(HttpStatus.OK)
+  async getBids(user: User): Promise<Bid[]> {
+    const bids = user.bids
+    return bids
+  }
+
+  @ApiCreatedResponse({ description: 'Get all bids a user has won.' })
+  @ApiBadRequestResponse({ description: 'Error for getting all bids a user has won.' })
+  @UseGuards(JwtAuthGuard)
+  @Get('bids/won')
+  @HttpCode(HttpStatus.OK)
+  async getBidsWon(@GetUser() user: User): Promise<Bid[]> {
+    const uniqueAuctionsBid: AuctionItem[] = [...new Set(user.bids.map(bid => bid.auction_item))]
+    const auctionWinnerIds: string[] = uniqueAuctionsBid.map(auction => auction.winner_id)
+    let bidsWon: Bid[] = []
+    for (let auctionId of auctionWinnerIds) {
+      if (user.id === auctionId) {
+        const winningBid = await this.auctionsService.getWinningBidForAuction(auctionId)
+        bidsWon.push(winningBid)
+      }
+    }
+    return bidsWon
+  }
+
+
 }
