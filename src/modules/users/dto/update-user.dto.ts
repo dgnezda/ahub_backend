@@ -16,9 +16,9 @@ export class UpdateUserDto {
   @IsEmail()
   email?: string
 
-  //   @ApiProperty({ required: false })
-  //   @IsOptional()
-  //   role_id?: string
+  @ApiProperty({ required: false })
+  @IsOptional()
+  role_id?: string
 
   @ApiProperty({ required: false })
   @IsOptional()

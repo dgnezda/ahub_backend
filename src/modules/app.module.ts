@@ -9,6 +9,7 @@ import { LoggerMiddleware } from 'middleware/logger.middleware'
 import { RolesModule } from './roles/roles.module'
 import { PermissionsModule } from './permissions/permissions.module'
 import { BidsModule } from './bids/bids.module'
+import { ScheduleModule } from '@nestjs/schedule'
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { BidsModule } from './bids/bids.module'
     AuctionsModule,
     RolesModule,
     PermissionsModule,
-    BidsModule
+    BidsModule,
+    ScheduleModule.forRoot()
   ],
   controllers: [],
   providers: [],

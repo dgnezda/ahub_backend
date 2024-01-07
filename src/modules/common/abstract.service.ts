@@ -42,7 +42,7 @@ export abstract class AbstractService {
       return element
     } catch (err) {
       Logging.error(err)
-      throw new InternalServerErrorException(`Something wet wrong while searching for an element with id: ${id}`)
+      throw new InternalServerErrorException(`Something went wrong while searching for an element with id: ${id}`)
     }
   }
 
@@ -52,7 +52,7 @@ export abstract class AbstractService {
       return this.repository.remove(element)
     } catch (err) {
       Logging.error(err)
-      throw new InternalServerErrorException('Something wet wrong while deleting an element')
+      throw new InternalServerErrorException('Something went wrong while deleting an element')
     }
   }
 
