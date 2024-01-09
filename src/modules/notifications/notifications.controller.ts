@@ -1,34 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, BadRequestException } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { NotificationsGateway } from 'modules/notifications/notifications.gateway';
+import { GetUserId } from 'decorators/get-user-id.decorator';
+import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard';
+import { GetUser } from 'decorators/get-user.decorator';
+import { User } from 'entities/user.entity';
 
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  constructor(
+    private readonly notificationsService: NotificationsService,
+    private readonly eventsGateway: NotificationsGateway,
+  ) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createNotificationDto: CreateNotificationDto) {
-    return this.notificationsService.create(createNotificationDto);
+  create(@Body() createNotificationDto: CreateNotificationDto, @GetUser() user: User) {
+    return this.notificationsService.create(createNotificationDto, user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('clear')
+  clearNotifications(@GetUserId() userId: string) {
+    if (userId) {
+      this.notificationsService.clearNotificationsForUser(userId)
+
+      const client = this.eventsGateway.getClientByUserId(userId)
+      if (client) client.emit('notificationsCleared')
+
+      return { message: 'Notifications cleared successfully'}
+    } else {
+      throw new BadRequestException()
+    }
   }
 
   @Get()
-  findAll() {
-    return this.notificationsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.notificationsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNotificationDto: UpdateNotificationDto) {
-    return this.notificationsService.update(+id, updateNotificationDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.notificationsService.remove(+id);
+  getNotifications() {
+    return this.notificationsService.getNotifications()
   }
 }

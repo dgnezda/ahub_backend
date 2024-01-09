@@ -7,6 +7,7 @@ import { Repository } from 'typeorm'
 import Logging from 'lib/Logging'
 import { User } from 'entities/user.entity'
 import { AuctionItem } from 'entities/auction-item.entity'
+import { BidTag } from 'interfaces/bid-tag.interface'
 
 @Injectable()
 export class BidsService extends AbstractService {
@@ -22,8 +23,8 @@ export class BidsService extends AbstractService {
     try {
       const user = (await this.usersRepository.findOne({ where: { id: userId } })) as User
       const auctionItem = (await this.auctionItemsRepository.findOne({ where: { id: auctionItemId } })) as AuctionItem
-      const bid = this.bidsRepository.create({...createBidDto, user: user, auction_item: auctionItem })
-      if (bid.bid_price >= auctionItem.starting_price || bid.bid_price > auctionItem.price) {
+      const bid = this.bidsRepository.create({...createBidDto, user: user, auction_item: auctionItem, status_tag: BidTag.IN_PROGRESS })
+      if (bid.bid_price > auctionItem.price) {
         if (!user.bids) user.bids = []
         if (!auctionItem.bids) auctionItem.bids = []
         user.bids.push(bid)

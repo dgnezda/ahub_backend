@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToOne, One
 import { Base } from './base.entity'
 import { User } from './user.entity'
 import { Bid } from './bid.entity'
+import { Notification } from './notification.entity'
 
 @Entity()
 export class AuctionItem extends Base {
@@ -34,6 +35,9 @@ export class AuctionItem extends Base {
   @OneToMany(() => Bid, (bid) => bid.auction_item, { eager: true })
   bids: Bid[]
 
-  @Column()
+  @Column({ nullable: true })
   winner_id: string
+
+  @OneToMany(() => Notification, notification => notification.auction_item)
+  notifications: Notification[]
 }

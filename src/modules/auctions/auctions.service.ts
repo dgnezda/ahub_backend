@@ -9,6 +9,7 @@ import Logging from 'lib/Logging'
 import { User } from 'entities/user.entity'
 import { Cron } from '@nestjs/schedule'
 import { Bid } from 'entities/bid.entity'
+import { BidTag } from 'interfaces/bid-tag.interface'
 
 @Injectable()
 export class AuctionsService extends AbstractService {
@@ -50,14 +51,39 @@ export class AuctionsService extends AbstractService {
     return this.update(auctionItem.id, { ...auctionItem, image })
   }
 
-  async updateActiveState(): Promise<void> {
+  async handleAuctionExpiration(): Promise<void> {
     const currentDate = new Date()
-    await this.auctionItemsRepository
+
+    const itemsToUpdate = await this.auctionItemsRepository
       .createQueryBuilder()
-      .update(AuctionItem)
-      .set({ is_active: false })
+      .select()
       .where('end_date < :currentDate', { currentDate })
-      .execute()
+      .andWhere('active = :isActive', { isActive: true})
+      .getMany()
+
+    for (const item of itemsToUpdate) {
+      item.is_active = false
+      await this.auctionItemsRepository.save(item)
+      this.notify(item)
+    }
+    
+    // FIRST VERSION:
+    // await this.auctionItemsRepository
+    //   .createQueryBuilder()
+    //   .update(AuctionItem)
+    //   .set({ is_active: false })
+    //   .where('end_date < :currentDate', { currentDate })
+    //   .execute()
+  }
+
+  async notify(auctionItem: AuctionItem): Promise<void> {
+    const user = auctionItem.user
+    if (user.id === auctionItem.winner_id) {
+      const winningBid = await this.getWinningBid(auctionItem.id)
+      winningBid.status_tag = BidTag.WON
+    }
+    
+    const endDate = auctionItem.end_date
   }
 
   async getAllBids(id: string): Promise<Bid[]> {
@@ -71,9 +97,9 @@ export class AuctionsService extends AbstractService {
     return winningBid
   }
 
-  @Cron('0 * * * * *')
-  handleCron() {
-    this.updateActiveState()
-    console.log('Active state of AuctionItems updated. I do this once every 60s.'); 
-  }
+  // @Cron('0 * * * * *')
+  // handleCron() {
+  //   this.handleAuctionExpiration() // NOTE: get number of AuctionItems that were updated
+  //   console.log('Active state of AuctionItems updated. Bidding users notified. Runs once a minute at the 0s mark.'); 
+  // }
 }

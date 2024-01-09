@@ -5,6 +5,7 @@ import { Role } from './role.entity'
 import { AuctionItem } from './auction-item.entity'
 import { Bid } from './bid.entity'
 import { ApiProperty } from '@nestjs/swagger'
+import { Notification } from './notification.entity'
 
 @Entity()
 export class User extends Base {
@@ -33,4 +34,7 @@ export class User extends Base {
   @ApiProperty({ isArray: true, type: Bid })
   @OneToMany(() => Bid, bid => bid.user )
   bids: Bid[]
+
+  @OneToMany(() => Notification, notification => notification.user)
+  notifications: Notification[]
 }

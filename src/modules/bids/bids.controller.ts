@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, HttpCode, HttpStatus, UseGuards, Patch } from '@nestjs/common';
 import { BidsService } from './bids.service';
 import { CreateBidDto } from './dto/create-bid.dto';
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
@@ -20,6 +20,16 @@ export class BidsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createBidDto: CreateBidDto, @GetUserId() userId: string): Promise<Bid> {
+    const auctionItemId = createBidDto.auction_item_id
+    return this.bidsService.create(createBidDto, userId, auctionItemId);
+  }
+
+  @ApiCreatedResponse({ description: 'Creates new bid.' }) // *** FIX ***
+  @ApiBadRequestResponse({ description: 'Error for creating new bid.' })
+  @UseGuards(JwtAuthGuard)
+  @Patch()
+  @HttpCode(HttpStatus.OK)
+  async update(@Body() createBidDto: CreateBidDto, @GetUserId() userId: string): Promise<Bid> {
     const auctionItemId = createBidDto.auction_item_id
     return this.bidsService.create(createBidDto, userId, auctionItemId);
   }

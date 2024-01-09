@@ -10,6 +10,7 @@ import { RolesModule } from './roles/roles.module'
 import { PermissionsModule } from './permissions/permissions.module'
 import { BidsModule } from './bids/bids.module'
 import { ScheduleModule } from '@nestjs/schedule'
+import { NotificationsModule } from './notifications/notifications.module'
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { ScheduleModule } from '@nestjs/schedule'
     RolesModule,
     PermissionsModule,
     BidsModule,
-    ScheduleModule.forRoot()
+    ScheduleModule.forRoot(),
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],

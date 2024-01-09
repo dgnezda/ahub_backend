@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsOptional } from "class-validator";
+import { BidTag } from "interfaces/bid-tag.interface";
 
 export class CreateBidDto {
     @ApiProperty({ required: true })
@@ -9,4 +10,8 @@ export class CreateBidDto {
     @ApiProperty({ required: true })
     @IsNotEmpty()
     auction_item_id: string
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    status_tag: BidTag
 }

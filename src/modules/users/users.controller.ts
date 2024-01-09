@@ -111,7 +111,7 @@ export class UsersController {
     let bidsWon: Bid[] = []
     for (let auctionId of auctionWinnerIds) {
       if (user.id === auctionId) {
-        const winningBid = await this.auctionsService.getWinningBidForAuction(auctionId)
+        const winningBid = await this.auctionsService.getWinningBid(auctionId)
         bidsWon.push(winningBid)
       }
     }
