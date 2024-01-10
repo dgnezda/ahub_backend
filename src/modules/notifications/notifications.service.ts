@@ -29,5 +29,4 @@ export class NotificationsService extends AbstractService {
   async clearNotificationsForUser(userId: string): Promise<void> {
     // this.notificationsRepository
   }
-
 }

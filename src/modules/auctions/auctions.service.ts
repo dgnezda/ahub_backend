@@ -97,6 +97,32 @@ export class AuctionsService extends AbstractService {
     return winningBid
   }
 
+  async autoUpdateAllAuctions() {}
+
+  _calculateAndFormatTimeDifference(endDate: Date): string {
+    const millisecondsPerMinute = 60 * 1000
+    const millisecondsPerHour = 60 * millisecondsPerMinute
+    const millisecondsPerDay = 24 * millisecondsPerHour
+    
+    const startDate = new Date() 
+  
+    const timeDifference = endDate.getTime() - startDate.getTime()
+  
+    if (timeDifference >= millisecondsPerDay) {
+      // Output in days
+      const days = Math.floor(timeDifference / millisecondsPerDay);
+      return `${days}d`;
+    } else if (timeDifference >= 2 * millisecondsPerHour) {
+      // Output in hours
+      const hours = Math.floor(timeDifference / millisecondsPerHour);
+      return `${hours}h`;
+    } else {
+      // Output in minutes
+      const minutes = Math.floor(timeDifference / millisecondsPerMinute);
+      return `${minutes}m`;
+    }
+  }
+
   // @Cron('0 * * * * *')
   // handleCron() {
   //   this.handleAuctionExpiration() // NOTE: get number of AuctionItems that were updated
