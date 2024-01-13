@@ -1,8 +1,7 @@
-import * as admin from 'firebase-admin'
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, BadRequestException } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { NotificationsGateway } from 'modules/notifications/notifications.gateway';
+import { NotificationsGateway } from './notifications.gateway';
 import { GetUserId } from 'decorators/get-user-id.decorator';
 import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard';
 import { GetUser } from 'decorators/get-user.decorator';
@@ -40,29 +39,5 @@ export class NotificationsController {
   @Get()
   getNotifications() {
     return this.notificationsService.getNotifications()
-  }
-
-  // FIREBASE PUSH NOTIFICATION
-  @Post('send')
-  async sendPushNotification(@Body() notificationData: any) {
-    try {
-      const { token, title, body } = notificationData
-
-      const message = {
-        notification: {
-          title,
-          body,
-        },
-        token,
-      }
-
-      const response = await admin.messaging().send(message)
-      console.log(`Notification sent successfully: ${response}`);
-      
-      return { success: true, message: 'Notification sent successfully' }
-    } catch (err) {
-      Logging.error(err)
-      return { success: false, message: 'Error sending notification'}
-    }
   }
 }

@@ -4,14 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import cookieParser from 'cookie-parser'
 import express from 'express'
 import Logging from './lib/Logging'
-import * as admin from 'firebase-admin'
 
 import { AppModule } from './modules/app.module'
-import { firebaseConfig } from 'config/firebase.config'
-
-admin.initializeApp({
-  credential: admin.credential.cert(firebaseConfig),
-})
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

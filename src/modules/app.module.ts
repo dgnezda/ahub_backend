@@ -11,6 +11,7 @@ import { PermissionsModule } from './permissions/permissions.module'
 import { BidsModule } from './bids/bids.module'
 import { ScheduleModule } from '@nestjs/schedule'
 import { NotificationsModule } from './notifications/notifications.module'
+import { EmailModule } from './email/email.module'
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { NotificationsModule } from './notifications/notifications.module'
     BidsModule,
     ScheduleModule.forRoot(),
     NotificationsModule,
+    EmailModule
   ],
   controllers: [],
   providers: [],

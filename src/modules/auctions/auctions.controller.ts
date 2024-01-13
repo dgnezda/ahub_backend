@@ -22,15 +22,16 @@ import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swag
 import { PaginatedResult } from 'modules/common/interfaces/paginated-result.interface'
 import { AuctionItem } from 'entities/auction-item.entity'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { join, parse } from 'path'
+import { join } from 'path'
 import { isFileExtensionSafe, removeFile, saveImageToStorage } from 'helpers/image-storage'
-import { Express, Request } from 'express'
+import { Express } from 'express'
 import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard'
 import { Public } from 'decorators/public.decorator'
 import { GetUserId } from 'decorators/get-user-id.decorator'
 import { Bid } from 'entities/bid.entity'
 import { BidsService } from 'modules/bids/bids.service'
 import { UsersService } from 'modules/users/users.service'
+import { AuctionsGateway } from './auctions.gateway'
 
 @ApiTags('auctions')
 @Controller('auctions')
@@ -39,7 +40,10 @@ export class AuctionsController {
     private readonly auctionsService: AuctionsService,
     private readonly bidsService: BidsService,
     private readonly usersService: UsersService,
+    private readonly auctionsGateway: AuctionsGateway
   ) {}
+
+  // CRUD 
 
   @ApiCreatedResponse({ description: 'List all auctions.' })
   @ApiBadRequestResponse({ description: 'Error for requesting list of auctions.' })
@@ -128,4 +132,21 @@ export class AuctionsController {
   async getAllBids(@Param('id') id: string): Promise<Bid[]> {
     return this.auctionsService.getAllBids(id)
   }
+
+  // WebSocket
+
+  // @Get(':id/start')
+  // startAuction(@Param('id') auctionId: string) {
+  //   const endTime = new Date().getTime() + 5 * 60 * 1000; // Example: 5 minutes from now
+  //   this.auctionsService.createAuctionItem(auctionId, endTime);
+  //   this.auctionsGateway.server.to(auctionId).emit('auctionStarted', { auctionId, endTime });
+  //   this.auctionsGateway.sendTimeRemainingUpdates(auctionId); // Start sending time remaining updates
+  //   return 'Auction started';
+  // }
+
+  // @Get(':id/subscribe')
+  // subscribeToAuction(@Param('id') auctionId: string) {
+  //   this.auctionsGateway.server.to(auctionId).emit('subscribeToAuction', { auctionId });
+  //   return 'Subscribed to auction updates';
+  // }
 }

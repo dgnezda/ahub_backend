@@ -51,7 +51,7 @@ export class AuctionsService extends AbstractService {
     return this.update(auctionItem.id, { ...auctionItem, image })
   }
 
-  async handleAuctionExpiration(): Promise<void> {
+  async handleAuctionsExpiration(): Promise<void> {
     const currentDate = new Date()
 
     const itemsToUpdate = await this.auctionItemsRepository
@@ -97,9 +97,7 @@ export class AuctionsService extends AbstractService {
     return winningBid
   }
 
-  async autoUpdateAllAuctions() {}
-
-  _calculateAndFormatTimeDifference(endDate: Date): string {
+  calculateAndFormatTimeDifference(endDate: Date): string {
     const millisecondsPerMinute = 60 * 1000
     const millisecondsPerHour = 60 * millisecondsPerMinute
     const millisecondsPerDay = 24 * millisecondsPerHour
@@ -123,9 +121,37 @@ export class AuctionsService extends AbstractService {
     }
   }
 
+  // FIXME: REPLACE WITH DATABASE:
+  private auctionItems: Map<string, { endTime: number }> = new Map() // FIXME:
+
+  // createAuctionItem(auctionId: string, endTime: number) { // FIXME: ?
+  //   this.auctionItems.set(auctionId, { endTime })
+  // }
+  
+  calculateTimeRemaining(auctionId: string): string { // FIXME:
+    const currentTime = new Date().getTime()
+    const endTime = this.auctionItems.get(auctionId)?.endTime // REPLACE WITH DATABASE
+
+    if (!endTime || endTime <= currentTime) {
+      return '0s'
+    }
+
+    const timeRemaining = endTime - currentTime;
+
+    if (timeRemaining >= 2 * 24 * 60 * 60 * 1000) {
+      return `${Math.floor(timeRemaining / (24 * 60 * 60 * 1000))}d`
+    } else if (timeRemaining >= 60 * 60 * 1000) {
+      return `${Math.floor(timeRemaining / (60 * 60 * 1000))}h`
+    } else if (timeRemaining >= 60 * 1000) {
+      return `${Math.floor(timeRemaining / (60 * 1000))}m`
+    } else {
+      return `${Math.floor(timeRemaining / 1000)}s`
+    }
+  }
+
   // @Cron('0 * * * * *')
   // handleCron() {
-  //   this.handleAuctionExpiration() // NOTE: get number of AuctionItems that were updated
+  //   this.handleAuctionsExpiration() // NOTE: get number of AuctionItems that were updated
   //   console.log('Active state of AuctionItems updated. Bidding users notified. Runs once a minute at the 0s mark.'); 
   // }
 }

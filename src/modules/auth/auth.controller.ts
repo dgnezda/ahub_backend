@@ -10,6 +10,9 @@ import {
   UseGuards,
   Req,
   Res,
+  Patch,
+  Logger,
+  HttpException,
 } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
@@ -19,12 +22,19 @@ import { User } from 'entities/user.entity'
 import { LocalAuthGuard } from './guards/local-auth.guard'
 import { RequestWithUser } from 'interfaces/auth.interface'
 import { Request, Response } from 'express'
+import { ChangePasswordDto } from './dto/change-password.dto'
+import { JwtAuthGuard } from './guards/jwt.guard'
+import { GetUserId } from 'decorators/get-user-id.decorator'
+import { EmailService } from 'modules/email/email.service'
 
 @ApiTags('auth')
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private emailService: EmailService,
+  ) {}
 
   @ApiCreatedResponse({ description: 'Registers new user.' })
   @ApiBadRequestResponse({ description: 'Error for registering new user.' })
@@ -63,5 +73,36 @@ export class AuthController {
   async signout(@Res({ passthrough: true }) res: Response): Promise<{ msg: string }> {
     res.clearCookie('access_token')
     return { msg: 'ok' }
+  }
+
+  @ApiCreatedResponse({ description: 'Changes user password.' })
+  @ApiBadRequestResponse({ description: 'Error for changing user password.' })
+  @Patch('change-pw')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async changePassword(@Body() body: ChangePasswordDto, @GetUserId() userId: string): Promise<User> {
+    return await this.authService.changeUserPassword(body, userId)
+  }
+
+  @ApiCreatedResponse({ description: 'Resets user password.' })
+  @ApiBadRequestResponse({ description: 'Error for resetting user password.' })
+  @Post('reset-pw')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  async sendResetPasswordEmail(@Body('email') email: string): Promise<void> {
+    const resetToken = await this.authService.generateResetToken(email)
+    const resetLink = `https//localhost:8080/reset-pw/${resetToken}`
+    const emailTemplate = `
+      <p>Hello,</p>
+      <p>You have requested to reset your password. Click on the link below to proceed:</p>
+      <a href="${resetLink}">${resetLink}</a>
+      <p>If you did not request this, pleas ignore this email.</p>
+    `
+    try {
+      await this.emailService.sendMail(email, 'Password Reset Request', emailTemplate)
+    } catch (err) {
+      Logger.error(err)
+      throw new HttpException('Failed to send email', HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 }

@@ -7,12 +7,13 @@ import { User } from 'entities/user.entity'
 import { Bid } from 'entities/bid.entity'
 import { BidsService } from 'modules/bids/bids.service'
 import { UsersService } from 'modules/users/users.service'
+import { AuctionsGateway } from './auctions.gateway'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AuctionItem, User, Bid]),
   ],
   controllers: [AuctionsController],
-  providers: [AuctionsService, BidsService, UsersService],
+  providers: [AuctionsService, BidsService, UsersService, AuctionsGateway],
 })
 export class AuctionsModule {}

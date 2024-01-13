@@ -31,7 +31,7 @@ export class BidsController {
   @HttpCode(HttpStatus.OK)
   async update(@Body() createBidDto: CreateBidDto, @GetUserId() userId: string): Promise<Bid> {
     const auctionItemId = createBidDto.auction_item_id
-    return this.bidsService.create(createBidDto, userId, auctionItemId);
+    return this.bidsService.update(createBidDto, userId, auctionItemId);
   }
 
   @ApiCreatedResponse({ description: 'List all bids.' })
@@ -48,6 +48,6 @@ export class BidsController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string): Promise<Bid> {
-    return this.bidsService.findById(id);
+    return this.bidsService.findById(id)
   }
 }

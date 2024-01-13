@@ -9,6 +9,7 @@ import { AuthService } from './auth.service'
 import { JwtAuthGuard } from './guards/jwt.guard'
 import { JwtStrategy } from './strategies/jwt.strategy'
 import { LocalStrategy } from './strategies/local.strategy'
+import { EmailService } from 'modules/email/email.service'
 
 dotenv.config({ path: `.env.${process.env.STAGE}`})
 
@@ -31,6 +32,7 @@ dotenv.config({ path: `.env.${process.env.STAGE}`})
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    EmailService,
   ],
   exports: [AuthService],
 })

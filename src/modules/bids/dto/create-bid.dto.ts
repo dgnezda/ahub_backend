@@ -7,6 +7,18 @@ export class CreateBidDto {
     @IsNotEmpty()
     bid_price: number
 
+    @ApiProperty({ required: false })
+    @IsOptional()
+    is_autobid: boolean
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    increment: number
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    max_price: number
+
     @ApiProperty({ required: true })
     @IsNotEmpty()
     auction_item_id: string
