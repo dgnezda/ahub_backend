@@ -9,7 +9,9 @@ import { Notification } from 'entities/notification.entity';
 
 @Injectable()
 export class NotificationsService extends AbstractService {
-  constructor(@InjectRepository(Notification) private notificationsRepository: Repository<Notification>, 
+  constructor(
+    @InjectRepository(Notification) private notificationsRepository: Repository<Notification>, 
+    @InjectRepository(User) private usersRepository: Repository<User>, 
     private readonly notificationsGateway: NotificationsGateway
     ) {
       super(notificationsRepository)
@@ -18,7 +20,7 @@ export class NotificationsService extends AbstractService {
   async create(createNotificationDto: CreateNotificationDto, user: User) {
     return 'This action adds a new notification'; 
   }
-
+  
   async getNotifications() {}
 
   async notifyUser(userId: string, notification: string) {
@@ -27,6 +29,7 @@ export class NotificationsService extends AbstractService {
   }
 
   async clearNotificationsForUser(userId: string): Promise<void> {
-    // this.notificationsRepository
+    const user = await this.usersRepository.findOne({ where: { id: userId } }) as User
+    user.notifications = []
   }
 }

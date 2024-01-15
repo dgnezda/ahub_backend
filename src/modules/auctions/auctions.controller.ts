@@ -68,7 +68,12 @@ export class AuctionsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createAuctionDto: CreateAuctionDto, @GetUserId() userId: string): Promise<AuctionItem> {
-    return this.auctionsService.create(createAuctionDto, userId)
+    const auction = await this.auctionsService.create(createAuctionDto, userId)
+    const auctionId = auction.id
+    const auctionEndTime = auction.end_date.getTime()
+    this.auctionsGateway.server.to(auctionId).emit('auctionStarted', { auctionId, auctionEndTime })
+    this.auctionsGateway.sendTimeRemainingUpdates(auctionId)
+    return auction
   }
 
   @ApiCreatedResponse({ description: 'Uploads new auction image.' })
@@ -125,8 +130,8 @@ export class AuctionsController {
     return this.auctionsService.getWinningBid(id)
   }
 
-  @ApiCreatedResponse({ description: 'Find auction item by ID.' })
-  @ApiBadRequestResponse({ description: 'Error for requesting auction item by ID.' })
+  @ApiCreatedResponse({ description: 'Find all bids for auction item by ID.' })
+  @ApiBadRequestResponse({ description: 'Error for requesting all bids for auction item by ID.' })
   @Get('all-bids/:id')
   @HttpCode(HttpStatus.OK)
   async getAllBids(@Param('id') id: string): Promise<Bid[]> {
@@ -136,17 +141,15 @@ export class AuctionsController {
   // WebSocket
 
   // @Get(':id/start')
-  // startAuction(@Param('id') auctionId: string) {
-  //   const endTime = new Date().getTime() + 5 * 60 * 1000; // Example: 5 minutes from now
-  //   this.auctionsService.createAuctionItem(auctionId, endTime);
+  // startAuction(@Param('id') auctionId: string, endTime: number) {
   //   this.auctionsGateway.server.to(auctionId).emit('auctionStarted', { auctionId, endTime });
   //   this.auctionsGateway.sendTimeRemainingUpdates(auctionId); // Start sending time remaining updates
   //   return 'Auction started';
   // }
 
-  // @Get(':id/subscribe')
-  // subscribeToAuction(@Param('id') auctionId: string) {
-  //   this.auctionsGateway.server.to(auctionId).emit('subscribeToAuction', { auctionId });
-  //   return 'Subscribed to auction updates';
-  // }
+  @Get(':id/subscribe')
+  subscribeToAuction(@Param('id') auctionId: string) {
+    this.auctionsGateway.server.to(auctionId).emit('subscribeToAuction', { auctionId });
+    return 'Subscribed to auction updates';
+  }
 }

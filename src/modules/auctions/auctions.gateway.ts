@@ -8,8 +8,11 @@ import {
   } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
 import { AuctionsService } from './auctions.service'
-  
-@WebSocketGateway()
+
+@WebSocketGateway(
+    Number(process.env.WEBSOCKET_AUCTIONS_PORT), 
+    { cors: { origin: ['http://localhost:3000', 'http://localhost:5173'], } }, // '*'
+)
 export class AuctionsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
@@ -36,7 +39,7 @@ export class AuctionsGateway implements OnGatewayConnection, OnGatewayDisconnect
 
     sendTimeRemainingUpdates(auctionId: string) {
         const intervalId = setInterval(() => {
-            const timeRemaining = this.auctionsService.calculateTimeRemaining(auctionId);
+            const timeRemaining = this.auctionsService.calculateAuctionTimeRemaining(auctionId);
             this.server.to(auctionId).emit('timeRemainingUpdate', { auctionId, timeRemaining });
 
             const room = this.server.sockets.adapter.rooms.get(auctionId);

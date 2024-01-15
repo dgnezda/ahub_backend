@@ -4,11 +4,10 @@ import { GetUserId } from 'decorators/get-user-id.decorator';
 import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard';
 import { Server, Socket } from 'socket.io'
 
-@WebSocketGateway({ 
-  cors: { 
-    origin: ['http://localhost:3000', 'http://localhost:5173'], 
-  } 
-})
+@WebSocketGateway(
+  Number(process.env.WEBSOCKET_NOTIFICATIONS_PORT), 
+  { cors: { origin: ['http://localhost:3001', 'http://localhost:5173'], } },
+)
 export class NotificationsGateway implements OnModuleInit {
   @WebSocketServer()
   server: Server;
@@ -22,8 +21,8 @@ export class NotificationsGateway implements OnModuleInit {
   }
   private readonly connectedClients = new Map<string, Socket>()
 
-  @UseGuards(JwtAuthGuard)
-  private extractUserIdFromSocket(socket: Socket, @GetUserId() userId: string): string | null {
+  extractUserIdFromSocket(socket: Socket) {
+    const userId = socket.handshake.query.userId
     return userId
   }
 
@@ -35,7 +34,7 @@ export class NotificationsGateway implements OnModuleInit {
   onNewNotification(@MessageBody() body: any) {
     console.log(body)
     this.server.emit('onNotification', {
-      msg: 'New Message',
+      msg: 'New Notification',
       content: body,
     })
   }
@@ -44,7 +43,6 @@ export class NotificationsGateway implements OnModuleInit {
   notifyUser(@MessageBody() payload: { userId: string; notification: string}): void {
     const { userId, notification } = payload
     const client = this.getClientByUserId(userId)
-
     if (client) client.emit('notification', notification)
   }
 }

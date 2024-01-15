@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Bid } from 'entities/bid.entity';
 import { User } from 'entities/user.entity';
 import { AuctionItem } from 'entities/auction-item.entity';
+import { AuctionsGateway } from 'modules/auctions/auctions.gateway';
+import { AuctionsService } from 'modules/auctions/auctions.service';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { AuctionItem } from 'entities/auction-item.entity';
   controllers: [BidsController],
   providers: [
     BidsService,
+    AuctionsGateway,
+    AuctionsService
   ],
 })
 export class BidsModule {}

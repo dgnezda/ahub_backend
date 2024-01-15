@@ -19,9 +19,9 @@ export class CreateAuctionDto {
   @IsOptional()
   price?: number
 
-  @ApiProperty({ required: false }) // NEEDS TO BE REQUIRED OR PRE-SET
-  @IsOptional()
-  end_date?: Date
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  end_date: Date
 
   @ApiProperty({ required: false })
   @IsOptional()

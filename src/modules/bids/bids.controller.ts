@@ -6,12 +6,14 @@ import { Bid } from 'entities/bid.entity';
 import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard';
 import { GetUserId } from 'decorators/get-user-id.decorator';
 import { Public } from 'decorators/public.decorator';
+import { AuctionsGateway } from 'modules/auctions/auctions.gateway';
 
 @ApiTags('bids')
 @Controller('bids')
 export class BidsController {
   constructor(
-    private readonly bidsService: BidsService
+    private readonly bidsService: BidsService,
+    private readonly auctionsGateway: AuctionsGateway
     ) {}
 
   @ApiCreatedResponse({ description: 'Creates new bid.' })
@@ -21,7 +23,9 @@ export class BidsController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createBidDto: CreateBidDto, @GetUserId() userId: string): Promise<Bid> {
     const auctionItemId = createBidDto.auction_item_id
-    return this.bidsService.create(createBidDto, userId, auctionItemId);
+    const bid = await this.bidsService.create(createBidDto, userId, auctionItemId);
+    
+    return bid
   }
 
   @ApiCreatedResponse({ description: 'Creates new bid.' }) // *** FIX ***

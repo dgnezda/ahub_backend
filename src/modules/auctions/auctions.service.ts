@@ -23,8 +23,13 @@ export class AuctionsService extends AbstractService {
 
   async create(createAuctionDto: CreateAuctionDto, userId: string): Promise<AuctionItem> {
     try {
+      let endDate = createAuctionDto.end_date
+      if (!endDate) {
+        // if no endDate is set, set it to 7 days from now
+        endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) 
+      }
       const user = await this.usersRepository.findOne({ where: { id: userId } })
-      const auctionItem = this.auctionItemsRepository.create({...createAuctionDto, user: user })
+      const auctionItem = this.auctionItemsRepository.create({...createAuctionDto, author: user })
       return this.auctionItemsRepository.save(auctionItem)
     } catch (err) {
       Logging.error(err)
@@ -61,10 +66,10 @@ export class AuctionsService extends AbstractService {
       .andWhere('active = :isActive', { isActive: true})
       .getMany()
 
-    for (const item of itemsToUpdate) {
-      item.is_active = false
-      await this.auctionItemsRepository.save(item)
-      this.notify(item)
+    for (const auctionItem of itemsToUpdate) {
+      auctionItem.is_active = false
+      await this.auctionItemsRepository.save(auctionItem)
+      this.handleAuctionBidsOnAuctionEnd(auctionItem)
     }
     
     // FIRST VERSION:
@@ -76,14 +81,24 @@ export class AuctionsService extends AbstractService {
     //   .execute()
   }
 
-  async notify(auctionItem: AuctionItem): Promise<void> {
-    const user = auctionItem.user
-    if (user.id === auctionItem.winner_id) {
-      const winningBid = await this.getWinningBid(auctionItem.id)
-      winningBid.status_tag = BidTag.WON
+  // FIXME: COMPLETE THIS! NOTIFY AUTHOR AND BIDDERS
+  async handleAuctionBidsOnAuctionEnd(auctionItem: AuctionItem): Promise<void> {
+    const author: User = auctionItem.author
+    const bidders: User[] = []
+    const bids = auctionItem.bids
+    let winner: User;
+    for (const bid of bids) {
+      if (bid.user.id === auctionItem.winner_id) {
+        bid.status_tag = BidTag.WON
+        winner = bid.user
+      } else {
+        bid.status_tag = BidTag.OUTBID
+        bidders.push(bid.user)
+      }
+      
     }
     
-    const endDate = auctionItem.end_date
+    // const endDate = auctionItem.end_date
   }
 
   async getAllBids(id: string): Promise<Bid[]> {
@@ -96,54 +111,28 @@ export class AuctionsService extends AbstractService {
     const winningBid = auction.bids.find((bid) => bid.bid_price === auction.price )
     return winningBid
   }
+  
+  // NOTE: MAYBE NEEDED ON THE FRONT_END?
+  async calculateAuctionTimeRemaining(auctionId: string): Promise<string> {
+    const currentTime = new Date().getTime()
+    const endTime = (
+      await this.auctionItemsRepository.findOne({ where: { id: auctionId } })
+      )
+      ?.end_date.getTime()
 
-  calculateAndFormatTimeDifference(endDate: Date): string {
+    if (!endTime || endTime <= currentTime) '0s'
+
+    const timeRemaining = endTime - currentTime;
     const millisecondsPerMinute = 60 * 1000
     const millisecondsPerHour = 60 * millisecondsPerMinute
     const millisecondsPerDay = 24 * millisecondsPerHour
-    
-    const startDate = new Date() 
-  
-    const timeDifference = endDate.getTime() - startDate.getTime()
-  
-    if (timeDifference >= millisecondsPerDay) {
-      // Output in days
-      const days = Math.floor(timeDifference / millisecondsPerDay);
-      return `${days}d`;
-    } else if (timeDifference >= 2 * millisecondsPerHour) {
-      // Output in hours
-      const hours = Math.floor(timeDifference / millisecondsPerHour);
-      return `${hours}h`;
-    } else {
-      // Output in minutes
-      const minutes = Math.floor(timeDifference / millisecondsPerMinute);
-      return `${minutes}m`;
-    }
-  }
 
-  // FIXME: REPLACE WITH DATABASE:
-  private auctionItems: Map<string, { endTime: number }> = new Map() // FIXME:
-
-  // createAuctionItem(auctionId: string, endTime: number) { // FIXME: ?
-  //   this.auctionItems.set(auctionId, { endTime })
-  // }
-  
-  calculateTimeRemaining(auctionId: string): string { // FIXME:
-    const currentTime = new Date().getTime()
-    const endTime = this.auctionItems.get(auctionId)?.endTime // REPLACE WITH DATABASE
-
-    if (!endTime || endTime <= currentTime) {
-      return '0s'
-    }
-
-    const timeRemaining = endTime - currentTime;
-
-    if (timeRemaining >= 2 * 24 * 60 * 60 * 1000) {
-      return `${Math.floor(timeRemaining / (24 * 60 * 60 * 1000))}d`
-    } else if (timeRemaining >= 60 * 60 * 1000) {
-      return `${Math.floor(timeRemaining / (60 * 60 * 1000))}h`
-    } else if (timeRemaining >= 60 * 1000) {
-      return `${Math.floor(timeRemaining / (60 * 1000))}m`
+    if (timeRemaining >= 2 * millisecondsPerDay) {
+      return `${Math.floor(timeRemaining / millisecondsPerDay)}d`
+    } else if (timeRemaining >= millisecondsPerHour) {
+      return `${Math.floor(timeRemaining / millisecondsPerHour)}h`
+    } else if (timeRemaining >= millisecondsPerMinute) {
+      return `${Math.floor(timeRemaining / millisecondsPerMinute)}m`
     } else {
       return `${Math.floor(timeRemaining / 1000)}s`
     }

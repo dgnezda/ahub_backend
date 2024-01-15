@@ -40,4 +40,11 @@ export class NotificationsController {
   getNotifications() {
     return this.notificationsService.getNotifications()
   }
+
+
+  async notifyAuthorOnAuctionEnd() {}
+
+  async notifyWinnerOnAuctionEnd() {}
+
+  async notifyDefeatedUsersOnAuctionEnd() {}
 }

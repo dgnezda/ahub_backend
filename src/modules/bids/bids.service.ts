@@ -26,6 +26,7 @@ export class BidsService extends AbstractService {
       const auctionItem = (await this.auctionItemsRepository.findOne({ where: { id: auctionItemId } })) as AuctionItem
       const bid = this.bidsRepository.create({...createBidDto, user: user, auction_item: auctionItem, status_tag: BidTag.WINNING })
       if (bid.bid_price > auctionItem.price) {
+        // Save bid info into user, auctionItem
         if (!user.bids) user.bids = []
         if (!auctionItem.bids) auctionItem.bids = []
         user.bids.push(bid)
@@ -35,7 +36,7 @@ export class BidsService extends AbstractService {
         this.auctionItemsRepository.save(auctionItem)
         return this.bidsRepository.save(bid)
       } else {
-        throw new Error('Your bid amount must be larger than current bid amount!')
+        throw new Error('Your bid amount must be larger than current auction price!')
       }
     } catch (err) {
       Logging.error(err)

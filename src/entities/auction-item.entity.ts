@@ -8,7 +8,7 @@ import { Notification } from './notification.entity'
 export class AuctionItem extends Base {
   @ManyToOne(() => User, { onDelete: 'CASCADE'}) //, user => user.auctions
   @JoinColumn({ name: 'user_id'})
-  user: User
+  author: User
 
   @Column()
   title: string
