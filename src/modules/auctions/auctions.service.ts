@@ -10,6 +10,7 @@ import { User } from 'entities/user.entity'
 import { Cron } from '@nestjs/schedule'
 import { Bid } from 'entities/bid.entity'
 import { BidTag } from 'interfaces/bid-tag.interface'
+import { NotificationsService } from 'modules/notifications/notifications.service'
 
 @Injectable()
 export class AuctionsService extends AbstractService {
@@ -17,6 +18,7 @@ export class AuctionsService extends AbstractService {
     @InjectRepository(AuctionItem) private readonly auctionItemsRepository: Repository<AuctionItem>,
     @InjectRepository(User) private usersRepository: Repository<User>,
     @InjectRepository(Bid) private bidsRepository: Repository<Bid>,
+    private readonly notificationsService: NotificationsService,
   ) {
     super(auctionItemsRepository)
   }
@@ -56,51 +58,6 @@ export class AuctionsService extends AbstractService {
     return this.update(auctionItem.id, { ...auctionItem, image })
   }
 
-  async handleAuctionsExpiration(): Promise<void> {
-    const currentDate = new Date()
-
-    const itemsToUpdate = await this.auctionItemsRepository
-      .createQueryBuilder()
-      .select()
-      .where('end_date < :currentDate', { currentDate })
-      .andWhere('active = :isActive', { isActive: true})
-      .getMany()
-
-    for (const auctionItem of itemsToUpdate) {
-      auctionItem.is_active = false
-      await this.auctionItemsRepository.save(auctionItem)
-      this.handleAuctionBidsOnAuctionEnd(auctionItem)
-    }
-    
-    // FIRST VERSION:
-    // await this.auctionItemsRepository
-    //   .createQueryBuilder()
-    //   .update(AuctionItem)
-    //   .set({ is_active: false })
-    //   .where('end_date < :currentDate', { currentDate })
-    //   .execute()
-  }
-
-  // FIXME: COMPLETE THIS! NOTIFY AUTHOR AND BIDDERS
-  async handleAuctionBidsOnAuctionEnd(auctionItem: AuctionItem): Promise<void> {
-    const author: User = auctionItem.author
-    const bidders: User[] = []
-    const bids = auctionItem.bids
-    let winner: User;
-    for (const bid of bids) {
-      if (bid.user.id === auctionItem.winner_id) {
-        bid.status_tag = BidTag.WON
-        winner = bid.user
-      } else {
-        bid.status_tag = BidTag.OUTBID
-        bidders.push(bid.user)
-      }
-      
-    }
-    
-    // const endDate = auctionItem.end_date
-  }
-
   async getAllBids(id: string): Promise<Bid[]> {
     const auction = await this.auctionItemsRepository.findOne({ where: { id: id } })
     return auction.bids
@@ -110,6 +67,50 @@ export class AuctionsService extends AbstractService {
     const auction = await this.auctionItemsRepository.findOne({ where: { id: id } })
     const winningBid = auction.bids.find((bid) => bid.bid_price === auction.price )
     return winningBid
+  }
+
+  // On Expiration of Auctions
+  async handleAuctionsExpiration(): Promise<void> {
+    const currentDate = new Date()
+
+    const auctionItemsToUpdate = await this.auctionItemsRepository
+      .createQueryBuilder()
+      .select()
+      .where('end_date < :currentDate', { currentDate })
+      .andWhere('is_active = :isActive', { isActive: true})
+      .getMany()
+
+    if (auctionItemsToUpdate.length === 0) return console.log('0')
+
+    const numberOfAuctionItems = auctionItemsToUpdate.length
+    
+    for (const auctionItem of auctionItemsToUpdate) {
+      auctionItem.is_active = false
+      await this.auctionItemsRepository.save(auctionItem)
+      this.handleAuctionBidsOnAuctionEnd(auctionItem)
+    }
+    
+    console.log(`[${numberOfAuctionItems}] auction items have expired.`)
+  }
+
+  async handleAuctionBidsOnAuctionEnd(auctionItem: AuctionItem): Promise<void> {
+    const author: User = auctionItem.author
+    const usersToNotify: User[] = [author]
+    const bids = auctionItem.bids
+    let winner: User 
+    for (const bid of bids) {
+      if (bid.user.id === auctionItem.winner_id) {
+        bid.status_tag = BidTag.WON
+        winner = bid.user
+        usersToNotify.push(winner)
+        this.bidsRepository.save(bid)
+      } else {
+        bid.status_tag = BidTag.OUTBID
+        usersToNotify.push(bid.user)
+        this.bidsRepository.save(bid)
+      }
+    }
+    this.notificationsService.notifyUsers(usersToNotify, auctionItem)
   }
   
   // NOTE: MAYBE NEEDED ON THE FRONT_END?
@@ -138,9 +139,8 @@ export class AuctionsService extends AbstractService {
     }
   }
 
-  // @Cron('0 * * * * *')
-  // handleCron() {
-  //   this.handleAuctionsExpiration() // NOTE: get number of AuctionItems that were updated
-  //   console.log('Active state of AuctionItems updated. Bidding users notified. Runs once a minute at the 0s mark.'); 
-  // }
+  @Cron('0 * * * * *')
+  handleCron() {
+    this.handleAuctionsExpiration()
+  }
 }

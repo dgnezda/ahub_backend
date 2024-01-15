@@ -31,7 +31,6 @@ import { GetUserId } from 'decorators/get-user-id.decorator'
 import { Bid } from 'entities/bid.entity'
 import { BidsService } from 'modules/bids/bids.service'
 import { UsersService } from 'modules/users/users.service'
-import { AuctionsGateway } from './auctions.gateway'
 
 @ApiTags('auctions')
 @Controller('auctions')
@@ -40,7 +39,6 @@ export class AuctionsController {
     private readonly auctionsService: AuctionsService,
     private readonly bidsService: BidsService,
     private readonly usersService: UsersService,
-    private readonly auctionsGateway: AuctionsGateway
   ) {}
 
   // CRUD 
@@ -68,12 +66,7 @@ export class AuctionsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createAuctionDto: CreateAuctionDto, @GetUserId() userId: string): Promise<AuctionItem> {
-    const auction = await this.auctionsService.create(createAuctionDto, userId)
-    const auctionId = auction.id
-    const auctionEndTime = auction.end_date.getTime()
-    this.auctionsGateway.server.to(auctionId).emit('auctionStarted', { auctionId, auctionEndTime })
-    this.auctionsGateway.sendTimeRemainingUpdates(auctionId)
-    return auction
+    return this.auctionsService.create(createAuctionDto, userId)
   }
 
   @ApiCreatedResponse({ description: 'Uploads new auction image.' })
@@ -136,20 +129,5 @@ export class AuctionsController {
   @HttpCode(HttpStatus.OK)
   async getAllBids(@Param('id') id: string): Promise<Bid[]> {
     return this.auctionsService.getAllBids(id)
-  }
-
-  // WebSocket
-
-  // @Get(':id/start')
-  // startAuction(@Param('id') auctionId: string, endTime: number) {
-  //   this.auctionsGateway.server.to(auctionId).emit('auctionStarted', { auctionId, endTime });
-  //   this.auctionsGateway.sendTimeRemainingUpdates(auctionId); // Start sending time remaining updates
-  //   return 'Auction started';
-  // }
-
-  @Get(':id/subscribe')
-  subscribeToAuction(@Param('id') auctionId: string) {
-    this.auctionsGateway.server.to(auctionId).emit('subscribeToAuction', { auctionId });
-    return 'Subscribed to auction updates';
   }
 }

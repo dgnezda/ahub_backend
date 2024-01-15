@@ -1,12 +1,10 @@
-import { OnModuleInit, UseGuards } from '@nestjs/common';
+import { OnModuleInit } from '@nestjs/common';
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody } from '@nestjs/websockets'
-import { GetUserId } from 'decorators/get-user-id.decorator';
-import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard';
 import { Server, Socket } from 'socket.io'
 
 @WebSocketGateway(
   Number(process.env.WEBSOCKET_NOTIFICATIONS_PORT), 
-  { cors: { origin: ['http://localhost:3001', 'http://localhost:5173'], } },
+  { cors: { origin: '*' } }, // ['http://localhost:3001', 'http://localhost:5173'], 
 )
 export class NotificationsGateway implements OnModuleInit {
   @WebSocketServer()

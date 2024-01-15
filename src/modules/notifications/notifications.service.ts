@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { CreateNotificationDto } from './dto/create-notification.dto';
 import { AbstractService } from 'modules/common/abstract.service';
 import { NotificationsGateway } from 'modules/notifications/notifications.gateway';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'entities/user.entity';
 import { Notification } from 'entities/notification.entity';
+import { AuctionItem } from 'entities/auction-item.entity';
 
 @Injectable()
 export class NotificationsService extends AbstractService {
@@ -17,15 +17,15 @@ export class NotificationsService extends AbstractService {
       super(notificationsRepository)
     }
 
-  async create(createNotificationDto: CreateNotificationDto, user: User) {
-    return 'This action adds a new notification'; 
-  }
-  
-  async getNotifications() {}
-
-  async notifyUser(userId: string, notification: string) {
+  async notifyUser(userId: string, notification: any) { // ANY?
     const client = await this.notificationsGateway.getClientByUserId(userId)
     if (client) client.emit('notification', notification)
+  }
+
+  async notifyUsers(usersToNotify: User[], auctionItem: AuctionItem): Promise<void> {
+    for (const user of usersToNotify) {
+      this.notifyUser(user.id, auctionItem)
+    }
   }
 
   async clearNotificationsForUser(userId: string): Promise<void> {
