@@ -1,21 +1,20 @@
-import { OnModuleInit } from '@nestjs/common';
+import { OnModuleInit } from '@nestjs/common'
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
 
 @WebSocketGateway(
-  Number(process.env.WEBSOCKET_NOTIFICATIONS_PORT), 
-  { cors: { origin: '*' } }, // ['http://localhost:3001', 'http://localhost:5173'], 
+  Number(process.env.WEBSOCKET_NOTIFICATIONS_PORT),
+  { cors: { origin: '*' } }, // ['http://localhost:3001', 'http://localhost:5173'],
 )
 export class NotificationsGateway implements OnModuleInit {
   @WebSocketServer()
-  server: Server;
+  server: Server
 
   onModuleInit() {
-      this.server.on('connection', socket => {
-        console.log(socket.id)
-        console.log('Connected');
-        
-      })
+    this.server.on('connection', (socket) => {
+      console.log(socket.id)
+      console.log('Connected')
+    })
   }
   private readonly connectedClients = new Map<string, Socket>()
 
@@ -38,7 +37,7 @@ export class NotificationsGateway implements OnModuleInit {
   }
 
   @SubscribeMessage('notifyUser')
-  notifyUser(@MessageBody() payload: { userId: string; notification: string}): void {
+  notifyUser(@MessageBody() payload: { userId: string; notification: string }): void {
     const { userId, notification } = payload
     const client = this.getClientByUserId(userId)
     if (client) client.emit('notification', notification)

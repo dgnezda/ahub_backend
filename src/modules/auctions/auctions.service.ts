@@ -28,10 +28,10 @@ export class AuctionsService extends AbstractService {
       let endDate = createAuctionDto.end_date
       if (!endDate) {
         // if no endDate is set, set it to 7 days from now
-        endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) 
+        endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
       }
       const user = await this.usersRepository.findOne({ where: { id: userId } })
-      const auctionItem = this.auctionItemsRepository.create({...createAuctionDto, author: user })
+      const auctionItem = this.auctionItemsRepository.create({ ...createAuctionDto, author: user })
       return this.auctionItemsRepository.save(auctionItem)
     } catch (err) {
       Logging.error(err)
@@ -65,7 +65,7 @@ export class AuctionsService extends AbstractService {
 
   async getWinningBid(id: string): Promise<Bid> {
     const auction = await this.auctionItemsRepository.findOne({ where: { id: id } })
-    const winningBid = auction.bids.find((bid) => bid.bid_price === auction.price )
+    const winningBid = auction.bids.find((bid) => bid.bid_price === auction.price)
     return winningBid
   }
 
@@ -77,19 +77,19 @@ export class AuctionsService extends AbstractService {
       .createQueryBuilder()
       .select()
       .where('end_date < :currentDate', { currentDate })
-      .andWhere('is_active = :isActive', { isActive: true})
+      .andWhere('is_active = :isActive', { isActive: true })
       .getMany()
 
     if (auctionItemsToUpdate.length === 0) return console.log('0')
 
     const numberOfAuctionItems = auctionItemsToUpdate.length
-    
+
     for (const auctionItem of auctionItemsToUpdate) {
       auctionItem.is_active = false
       await this.auctionItemsRepository.save(auctionItem)
       this.handleAuctionBidsOnAuctionEnd(auctionItem)
     }
-    
+
     console.log(`[${numberOfAuctionItems}] auction items have expired.`)
   }
 
@@ -97,7 +97,7 @@ export class AuctionsService extends AbstractService {
     const author: User = auctionItem.author
     const usersToNotify: User[] = [author]
     const bids = auctionItem.bids
-    let winner: User 
+    let winner: User
     for (const bid of bids) {
       if (bid.user.id === auctionItem.winner_id) {
         bid.status_tag = BidTag.WON
@@ -112,18 +112,15 @@ export class AuctionsService extends AbstractService {
     }
     this.notificationsService.notifyUsers(usersToNotify, auctionItem)
   }
-  
+
   // NOTE: MAYBE NEEDED ON THE FRONT_END?
   async calculateAuctionTimeRemaining(auctionId: string): Promise<string> {
     const currentTime = new Date().getTime()
-    const endTime = (
-      await this.auctionItemsRepository.findOne({ where: { id: auctionId } })
-      )
-      ?.end_date.getTime()
+    const endTime = (await this.auctionItemsRepository.findOne({ where: { id: auctionId } }))?.end_date.getTime()
 
     if (!endTime || endTime <= currentTime) '0s'
 
-    const timeRemaining = endTime - currentTime;
+    const timeRemaining = endTime - currentTime
     const millisecondsPerMinute = 60 * 1000
     const millisecondsPerHour = 60 * millisecondsPerMinute
     const millisecondsPerDay = 24 * millisecondsPerHour

@@ -15,8 +15,8 @@ export class BidsService extends AbstractService {
   constructor(
     @InjectRepository(Bid) private bidsRepository: Repository<Bid>,
     @InjectRepository(User) private usersRepository: Repository<User>,
-    @InjectRepository(AuctionItem) private auctionItemsRepository: Repository<AuctionItem>
-    ) {
+    @InjectRepository(AuctionItem) private auctionItemsRepository: Repository<AuctionItem>,
+  ) {
     super(bidsRepository)
   }
 
@@ -24,17 +24,30 @@ export class BidsService extends AbstractService {
     try {
       const user = (await this.usersRepository.findOne({ where: { id: userId } })) as User
       const auctionItem = (await this.auctionItemsRepository.findOne({ where: { id: auctionItemId } })) as AuctionItem
-      const bid = this.bidsRepository.create({...createBidDto, user: user, auction_item: auctionItem, status_tag: BidTag.WINNING })
+      const bid = this.bidsRepository.create({
+        ...createBidDto,
+        user: user,
+        auction_item: auctionItem,
+        status_tag: BidTag.IN_PROGRESS,
+      })
+      if (!bid.is_autobid) bid.max_price = bid.bid_price
       if (bid.bid_price > auctionItem.price) {
         // Save bid info into user, auctionItem
         if (!user.bids) user.bids = []
         if (!auctionItem.bids) auctionItem.bids = []
         user.bids.push(bid)
         auctionItem.bids.push(bid)
-        auctionItem.price = bid.bid_price
-        this.usersRepository.save(user)
-        this.auctionItemsRepository.save(auctionItem)
-        return this.bidsRepository.save(bid)
+
+        // Handle Auto-bids
+        const autoBids = auctionItem.bids.filter((bid) => bid.is_autobid === true)
+        this.handleAutoBids(bid, autoBids, auctionItem)
+
+        if (bid.bid_price >= auctionItem.price) {
+          return this.bidsRepository.save(bid)
+        } else {
+          bid.status_tag = BidTag.OUTBID
+          return this.bidsRepository.save(bid)
+        }
       } else {
         throw new Error('Your bid amount must be larger than current auction price!')
       }
@@ -44,16 +57,17 @@ export class BidsService extends AbstractService {
     }
   }
 
+  // FIXME: CHECK FOR ERRORS!
   async update(updateBidDto: UpdateBidDto, userId: string, auctionItemId: string): Promise<Bid> {
     const user = (await this.usersRepository.findOne({ where: { id: userId } })) as User
     const auctionItem = (await this.auctionItemsRepository.findOne({ where: { id: auctionItemId } })) as AuctionItem
-    const bid = (await this.bidsRepository.findOne({ where: { user: user, auction_item: auctionItem }})) as Bid
+    const bid = (await this.bidsRepository.findOne({ where: { user: user, auction_item: auctionItem } })) as Bid
     if (updateBidDto.bid_price > auctionItem.price) {
       auctionItem.price = updateBidDto.bid_price
       bid.bid_price = updateBidDto.bid_price
       // Update status_tag for winning bid and defeated bids
       bid.status_tag = BidTag.WINNING
-      const defeatedBids: Bid[] = auctionItem.bids.filter(bidItem => bidItem !== bid)
+      const defeatedBids: Bid[] = auctionItem.bids.filter((bidItem) => bidItem !== bid)
       for (const bidItem of defeatedBids) {
         bidItem.status_tag = BidTag.OUTBID
         this.bidsRepository.save(bidItem)
@@ -63,5 +77,37 @@ export class BidsService extends AbstractService {
     } else {
       throw new Error('Your bid amount must be larger than current bid amount!')
     }
+  }
+
+  handleAutoBids(currentBid: Bid, bids: Bid[], auctionItem: AuctionItem): Bid {
+    // Check for edge cases
+    if (bids.length <= 1 && bids[0] === currentBid) return currentBid
+    if (!bids) return currentBid
+    // Find highest and second highest bid
+    let highestBid: Bid = bids[0]
+    let secondHighestBid: Bid = bids[0]
+    for (const bid of bids) {
+      if (bid.max_price > highestBid.max_price) {
+        secondHighestBid = highestBid
+        highestBid = bid
+      }
+    }
+    // Handle defeated bids
+    const defeatedBids = bids.filter((bid) => bid !== highestBid)
+    for (const bid of defeatedBids) {
+      if (bid.is_autobid) bid.bid_price = bid.max_price
+      bid.status_tag = BidTag.OUTBID
+      this.bidsRepository.save(bid)
+    }
+    // Handle winning bid
+    const highestPrice =
+      highestBid.increment !== null ? highestBid.increment + secondHighestBid.max_price : highestBid.bid_price
+    highestBid.status_tag = BidTag.WINNING
+    highestBid.bid_price = highestPrice
+    auctionItem.price = highestPrice
+    this.bidsRepository.save(highestBid)
+    this.auctionItemsRepository.save(auctionItem)
+
+    // return highestBid // NOTE: MAYBE NEED TO RETURN [highestBid, auctionItem]
   }
 }

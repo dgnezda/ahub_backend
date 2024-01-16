@@ -11,7 +11,7 @@ import { JwtStrategy } from './strategies/jwt.strategy'
 import { LocalStrategy } from './strategies/local.strategy'
 import { EmailService } from 'modules/email/email.service'
 
-dotenv.config({ path: `.env.${process.env.STAGE}`})
+dotenv.config({ path: `.env.${process.env.STAGE}` })
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ dotenv.config({ path: `.env.${process.env.STAGE}`})
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: `${process.env.JWT_SECRET_EXPIRES}s`}
+      signOptions: { expiresIn: `${process.env.JWT_SECRET_EXPIRES}s` },
     }),
   ],
   controllers: [AuthController],

@@ -10,15 +10,10 @@ import { compareHash, hash } from '../../utils/bcrypt'
 
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { Bid } from 'entities/bid.entity'
-import { AuctionsService } from 'modules/auctions/auctions.service'
 
 @Injectable()
 export class UsersService extends AbstractService {
-  constructor(
-    @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    private readonly auctionsService: AuctionsService,
-    ) {
+  constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {
     super(usersRepository)
   }
 
@@ -40,7 +35,7 @@ export class UsersService extends AbstractService {
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = (await this.findById(id)) as User
-    const { email, password, confirm_password, role_id, ...data } = updateUserDto 
+    const { email, password, confirm_password, role_id, ...data } = updateUserDto
     if (user.email !== email && email) {
       user.email = email
     }

@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToOne, OneToMany } from 'typeorm'
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import { Base } from './base.entity'
 import { User } from './user.entity'
 import { Bid } from './bid.entity'
@@ -6,8 +6,8 @@ import { Notification } from './notification.entity'
 
 @Entity()
 export class AuctionItem extends Base {
-  @ManyToOne(() => User, { onDelete: 'CASCADE'}) //, user => user.auctions
-  @JoinColumn({ name: 'user_id'})
+  @ManyToOne(() => User, { onDelete: 'CASCADE' }) //, user => user.auctions
+  @JoinColumn({ name: 'user_id' })
   author: User
 
   @Column()
@@ -38,6 +38,6 @@ export class AuctionItem extends Base {
   @Column({ nullable: true })
   winner_id: string
 
-  @OneToMany(() => Notification, notification => notification.auction_item)
+  @OneToMany(() => Notification, (notification) => notification.auction_item)
   notifications: Notification[]
 }

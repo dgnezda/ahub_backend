@@ -106,10 +106,10 @@ export class UsersController {
   @Get('bids/won')
   @HttpCode(HttpStatus.OK)
   async getBidsWon(@GetUser() user: User): Promise<Bid[]> {
-    const uniqueAuctionsBid: AuctionItem[] = [...new Set(user.bids.map(bid => bid.auction_item))]
-    const auctionWinnerIds: string[] = uniqueAuctionsBid.map(auction => auction.winner_id)
-    let bidsWon: Bid[] = []
-    for (let auctionId of auctionWinnerIds) {
+    const uniqueAuctionsBid: AuctionItem[] = [...new Set(user.bids.map((bid) => bid.auction_item))]
+    const auctionWinnerIds: string[] = uniqueAuctionsBid.map((auction) => auction.winner_id)
+    const bidsWon: Bid[] = []
+    for (const auctionId of auctionWinnerIds) {
       if (user.id === auctionId) {
         const winningBid = await this.auctionsService.getWinningBid(auctionId)
         bidsWon.push(winningBid)
@@ -117,6 +117,4 @@ export class UsersController {
     }
     return bidsWon
   }
-
-
 }

@@ -63,9 +63,9 @@ export class AuthService {
   }
 
   async changeUserPassword(changePasswordDto: ChangePasswordDto, userId: string): Promise<User> {
-    return this.usersService.update(userId, { 
-      password: changePasswordDto.new_password, 
-      confirm_password:  changePasswordDto.confirm_password
+    return this.usersService.update(userId, {
+      password: changePasswordDto.new_password,
+      confirm_password: changePasswordDto.confirm_password,
     })
   }
 }

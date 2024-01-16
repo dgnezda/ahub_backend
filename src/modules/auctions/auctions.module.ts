@@ -12,16 +12,8 @@ import { Notification } from 'entities/notification.entity'
 import { NotificationsGateway } from 'modules/notifications/notifications.gateway'
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([AuctionItem, User, Bid, Notification]),
-  ],
+  imports: [TypeOrmModule.forFeature([AuctionItem, User, Bid, Notification])],
   controllers: [AuctionsController],
-  providers: [
-    AuctionsService, 
-    BidsService, 
-    UsersService, 
-    NotificationsService,
-    NotificationsGateway,
-  ],
+  providers: [AuctionsService, BidsService, UsersService, NotificationsService, NotificationsGateway],
 })
 export class AuctionsModule {}

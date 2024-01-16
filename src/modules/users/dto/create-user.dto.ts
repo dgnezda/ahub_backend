@@ -42,6 +42,4 @@ export class CreateUserDto {
   @ApiProperty({ required: false })
   @IsOptional()
   auctions?: AuctionItem[] = []
-
-
 }

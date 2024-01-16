@@ -1,18 +1,16 @@
-import { Controller, Get, Post, Body, Param, HttpCode, HttpStatus, UseGuards, Patch } from '@nestjs/common';
-import { BidsService } from './bids.service';
-import { CreateBidDto } from './dto/create-bid.dto';
-import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
-import { Bid } from 'entities/bid.entity';
-import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard';
-import { GetUserId } from 'decorators/get-user-id.decorator';
-import { Public } from 'decorators/public.decorator';
+import { Controller, Get, Post, Body, Param, HttpCode, HttpStatus, UseGuards, Patch } from '@nestjs/common'
+import { BidsService } from './bids.service'
+import { CreateBidDto } from './dto/create-bid.dto'
+import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
+import { Bid } from 'entities/bid.entity'
+import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard'
+import { GetUserId } from 'decorators/get-user-id.decorator'
+import { Public } from 'decorators/public.decorator'
 
 @ApiTags('bids')
 @Controller('bids')
 export class BidsController {
-  constructor(
-    private readonly bidsService: BidsService,
-    ) {}
+  constructor(private readonly bidsService: BidsService) {}
 
   @ApiCreatedResponse({ description: 'Creates new bid.' })
   @ApiBadRequestResponse({ description: 'Error for creating new bid.' })
@@ -21,19 +19,19 @@ export class BidsController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createBidDto: CreateBidDto, @GetUserId() userId: string): Promise<Bid> {
     const auctionItemId = createBidDto.auction_item_id
-    const bid = await this.bidsService.create(createBidDto, userId, auctionItemId);
+    const bid = await this.bidsService.create(createBidDto, userId, auctionItemId)
 
     return bid
   }
 
-  @ApiCreatedResponse({ description: 'Creates new bid.' }) // *** FIX ***
-  @ApiBadRequestResponse({ description: 'Error for creating new bid.' })
+  @ApiCreatedResponse({ description: 'Updates bid.' }) // *** FIX ***
+  @ApiBadRequestResponse({ description: 'Error for updating bid.' })
   @UseGuards(JwtAuthGuard)
   @Patch()
   @HttpCode(HttpStatus.OK)
   async update(@Body() createBidDto: CreateBidDto, @GetUserId() userId: string): Promise<Bid> {
     const auctionItemId = createBidDto.auction_item_id
-    return this.bidsService.update(createBidDto, userId, auctionItemId);
+    return this.bidsService.update(createBidDto, userId, auctionItemId)
   }
 
   @ApiCreatedResponse({ description: 'List all bids.' })
@@ -42,7 +40,7 @@ export class BidsController {
   @Public()
   @HttpCode(HttpStatus.OK)
   async findAll() {
-    return this.bidsService.findAll(['auction_item', 'user']);
+    return this.bidsService.findAll(['auction_item', 'user'])
   }
 
   @ApiCreatedResponse({ description: 'Find bid by ID.' })

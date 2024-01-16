@@ -29,7 +29,7 @@ import { EmailModule } from './email/email.module'
     BidsModule,
     ScheduleModule.forRoot(),
     NotificationsModule,
-    EmailModule
+    EmailModule,
   ],
   controllers: [],
   providers: [],

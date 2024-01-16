@@ -12,7 +12,6 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
-  Req,
   UseGuards,
 } from '@nestjs/common'
 import { AuctionsService } from './auctions.service'
@@ -41,7 +40,7 @@ export class AuctionsController {
     private readonly usersService: UsersService,
   ) {}
 
-  // CRUD 
+  // CRUD
 
   @ApiCreatedResponse({ description: 'List all auctions.' })
   @ApiBadRequestResponse({ description: 'Error for requesting list of auctions.' })
@@ -111,8 +110,9 @@ export class AuctionsController {
   @Get('active')
   @Public()
   @HttpCode(HttpStatus.OK)
-  async findAllActiveAuctions(@Query('page') page: number, status: boolean): Promise<PaginatedResult> {
-    return this.auctionsService.findBy({ where: { 'is_active': true } })
+  async findAllActiveAuctions(): Promise<PaginatedResult> {
+    //@Query('page') page: number, status: boolean
+    return this.auctionsService.findBy({ where: { is_active: true } })
   }
 
   @ApiCreatedResponse({ description: 'Find winning bid for auction item by ID.' })
