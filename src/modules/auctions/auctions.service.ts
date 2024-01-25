@@ -11,6 +11,7 @@ import { Cron } from '@nestjs/schedule'
 import { Bid } from 'entities/bid.entity'
 import { BidTag } from 'interfaces/bid-tag.interface'
 import { NotificationsService } from 'modules/notifications/notifications.service'
+import { audit } from 'rxjs'
 
 @Injectable()
 export class AuctionsService extends AbstractService {
@@ -136,7 +137,7 @@ export class AuctionsService extends AbstractService {
     }
   }
 
-  @Cron('0 * * * * *')
+  @Cron('0 * * * * *') // WHY YOU RUN TWICE PER MINUTE??
   handleCron() {
     this.handleAuctionsExpiration()
   }
