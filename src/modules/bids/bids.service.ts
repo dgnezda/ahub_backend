@@ -48,8 +48,9 @@ export class BidsService extends AbstractService {
         auctionItem.bids.push(bid)
 
         // Handle Auto-bids FIXME: TU SI OSTAL - rešiti highest bid - če highest bid ni auto-bid
-        const highestBid = await this.auctionsService.getWinningBid(auctionItem.id)
-        if (highestBid.is_autobid === true) { // DO WE REALLY NEED ALL BIDS?? JUST THE HIGHEST!!
+        const currentHighestBid = await this.auctionsService.getWinningBid(auctionItem.id)
+        
+        if (currentHighestBid.is_autobid === true) { // DO WE REALLY NEED ALL BIDS?? JUST THE HIGHEST!!
           const autoBids = auctionItem.bids.filter(bid => bid.is_autobid === true)
           this.handleAutoBids(bid, autoBids, auctionItem)
         } else {
@@ -73,7 +74,7 @@ export class BidsService extends AbstractService {
     }
   }
 
-  // FIXME: CHECK FOR ERRORS!
+  // FIXME: CHECK FOR ERRORS, FLOW ... shorten?
   async update(updateBidDto: UpdateBidDto, userId: string, auctionItemId: string): Promise<Bid> {
     try {
       const user = (await this.usersRepository.findOne({ 
@@ -134,10 +135,12 @@ export class BidsService extends AbstractService {
       bid.status_tag = BidTag.OUTBID
       this.bidsRepository.save(bid)
     }
-    // Handle winning bid
+    // Handle winning bid, price
     const highestPrice =
       highestBid.increment !== null 
-      ? highestBid.increment + secondHighestBid.max_price 
+      ? highestBid.increment + secondHighestBid.max_price > highestBid.max_price
+        ? highestBid.max_price
+        : highestBid.increment + secondHighestBid.max_price 
       : highestBid.bid_price
     highestBid.status_tag = BidTag.WINNING
     highestBid.bid_price = highestPrice
