@@ -13,7 +13,7 @@ export class AuctionItem extends Base {
   @Column()
   title: string
 
-  @Column({ nullable: true })
+  @Column({ default: true })
   is_active: boolean
 
   @Column()

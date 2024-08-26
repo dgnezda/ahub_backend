@@ -14,14 +14,15 @@ export class NotificationsController {
 
   @UseGuards(JwtAuthGuard)
   @Post('clear')
-  clearNotifications(@GetUserId() userId: string) {
+  async clearNotifications(@GetUserId() userId: string) {
     try {
-      if (userId) {
-        this.notificationsService.clearNotificationsForUser(userId)
-        const client = this.eventsGateway.getClientByUserId(userId)
-        if (client) client.emit('notificationsCleared')
-        return { message: 'Notifications cleared successfully' }
-      }
+      if (!userId) throw new BadRequestException('User ID is required')
+
+      await this.notificationsService.clearNotificationsForUser(userId)
+      const client = this.eventsGateway.getClientByUserId(userId)
+      if (client) client.emit('notificationsCleared')
+      
+      return { message: 'Notifications cleared successfully' }
     } catch (err) {
       Logging.error(err)
       throw new BadRequestException('Something went wrong while trying to clear notifications.')

@@ -36,8 +36,8 @@ import { UsersService } from 'modules/users/users.service'
 export class AuctionsController {
   constructor(
     private readonly auctionsService: AuctionsService,
-    private readonly bidsService: BidsService,
-    private readonly usersService: UsersService,
+    // private readonly bidsService: BidsService,
+    // private readonly usersService: UsersService,
   ) {}
 
   // CRUD
@@ -71,9 +71,14 @@ export class AuctionsController {
   @ApiCreatedResponse({ description: 'Uploads new auction image.' })
   @ApiBadRequestResponse({ description: 'Error for uploading new auction image.' })
   @Post('upload/:id')
-  @UseInterceptors(FileInterceptor('image', saveImageToStorage))
+  @UseInterceptors(FileInterceptor('image', {
+    storage: saveImageToStorage,
+    limits: {fileSize: 4 * 1024 * 1024 }, // 4MB limit
+  }))
   @HttpCode(HttpStatus.CREATED)
   async upload(@UploadedFile() file: Express.Multer.File, @Param('id') auctionId: string): Promise<AuctionItem> {
+    if (!file) throw new BadRequestException('File too large or invalid file type.');
+    
     const filename = file?.filename
 
     if (!filename) throw new BadRequestException('File must be a png, jpg/jpeg')

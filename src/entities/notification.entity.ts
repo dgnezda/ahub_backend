@@ -13,7 +13,7 @@ export class Notification extends Base {
   auction_item: AuctionItem
 
   @Column({ nullable: true })
-  read: boolean
+  is_read: boolean
 
   @Column({ nullable: true })
   bid_tag: BidTag

@@ -63,7 +63,10 @@ export class UsersController {
   }
 
   @Post('upload/:id')
-  @UseInterceptors(FileInterceptor('avatar', saveImageToStorage))
+  @UseInterceptors(FileInterceptor('avatar', {
+    storage: saveImageToStorage,
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+  }))
   @HttpCode(HttpStatus.CREATED)
   async upload(@UploadedFile() file: Express.Multer.File, @Param('id') id: string): Promise<User> {
     const filename = file?.filename
@@ -73,7 +76,7 @@ export class UsersController {
     const imagesFolderPath = join(process.cwd(), 'files')
     const fullImagePath = join(imagesFolderPath + '/' + file.filename)
     if (await isFileExtensionSafe(fullImagePath)) {
-      return this.usersService.upadteUserImageId(id, filename)
+      return this.usersService.updateUserImageId(id, filename)
     }
     removeFile(fullImagePath)
     throw new BadRequestException('File content does not match extension!')
@@ -95,9 +98,9 @@ export class UsersController {
   @ApiBadRequestResponse({ description: 'Error for getting bids for user.' })
   @Get('bids/:id')
   @HttpCode(HttpStatus.OK)
-  async getBids(user: User): Promise<Bid[]> {
-    const bids = user.bids
-    return bids
+  async getBids(@Param('id') id: string): Promise<Bid[]> {
+    const user = await this.usersService.findById(id, ['bids'])
+    return user.bids
   }
 
   @ApiCreatedResponse({ description: 'Get all bids a user has won.' })

@@ -65,7 +65,7 @@ export class UsersService extends AbstractService {
     }
   }
 
-  async upadteUserImageId(id: string, avatar: string): Promise<User> {
+  async updateUserImageId(id: string, avatar: string): Promise<User> {
     const user = await this.findById(id)
     return this.update(user.id, { avatar })
   }

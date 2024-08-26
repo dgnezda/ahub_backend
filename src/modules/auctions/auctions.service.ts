@@ -11,7 +11,7 @@ import { Cron } from '@nestjs/schedule'
 import { Bid } from 'entities/bid.entity'
 import { BidTag } from 'interfaces/bid-tag.interface'
 import { NotificationsService } from 'modules/notifications/notifications.service'
-import { audit } from 'rxjs'
+// import { audit } from 'rxjs'
 
 @Injectable()
 export class AuctionsService extends AbstractService {
@@ -60,12 +60,12 @@ export class AuctionsService extends AbstractService {
   }
 
   async getAllBids(id: string): Promise<Bid[]> {
-    const auction = await this.auctionItemsRepository.findOne({ where: { id: id } })
+    const auction = await this.auctionItemsRepository.findOne({ where: { id: id }, relations: ['bids'] })
     return auction.bids
   }
 
   async getWinningBid(id: string): Promise<Bid> {
-    const auction = await this.auctionItemsRepository.findOne({ where: { id: id } })
+    const auction = await this.auctionItemsRepository.findOne({ where: { id: id }, relations: ['bids'] })
     const winningBid = auction.bids.find((bid) => bid.bid_price === auction.price)
     return winningBid
   }
@@ -75,11 +75,12 @@ export class AuctionsService extends AbstractService {
     const currentDate = new Date()
 
     const auctionItemsToUpdate = await this.auctionItemsRepository
-      .createQueryBuilder()
-      .select()
-      .where('end_date < :currentDate', { currentDate })
-      .andWhere('is_active = :isActive', { isActive: true })
-      .getMany()
+      .createQueryBuilder('auctionItem')
+      .leftJoinAndSelect('auctionItem.bids', 'bid')
+      .leftJoinAndSelect('auctionItem.author', 'author')
+      .where('auctionItem.end_date < :currentDate', { currentDate })
+      .andWhere('auctionItem.is_active = :isActive', { isActive: true })
+      .getMany();
 
     if (auctionItemsToUpdate.length === 0) return console.log('0')
 
@@ -87,7 +88,10 @@ export class AuctionsService extends AbstractService {
 
     for (const auctionItem of auctionItemsToUpdate) {
       auctionItem.is_active = false
-      await this.auctionItemsRepository.save(auctionItem)
+    }
+    await this.auctionItemsRepository.save(auctionItemsToUpdate)
+    
+    for (const auctionItem of auctionItemsToUpdate) {
       this.handleAuctionBidsOnAuctionEnd(auctionItem)
     }
 
@@ -95,24 +99,19 @@ export class AuctionsService extends AbstractService {
   }
 
   async handleAuctionBidsOnAuctionEnd(auctionItem: AuctionItem): Promise<void> {
-    const author: User = auctionItem.author
-    const usersToNotify: User[] = [author]
-    const bids = auctionItem.bids
-    let winner: User
+    const author: User = auctionItem.author;
+    const usersToNotify: User[] = [author];
+    const bids = auctionItem.bids;
+
     for (const bid of bids) {
-      if (bid.user.id === auctionItem.winner_id) {
-        bid.status_tag = BidTag.WON
-        winner = bid.user
-        usersToNotify.push(winner)
-        this.bidsRepository.save(bid)
-      } else {
-        bid.status_tag = BidTag.OUTBID
-        usersToNotify.push(bid.user)
-        this.bidsRepository.save(bid)
-      }
+        bid.status_tag = bid.user.id === auctionItem.winner_id ? BidTag.WON : BidTag.OUTBID;
+        await this.bidsRepository.save(bid);
+        usersToNotify.push(bid.user);
     }
-    this.notificationsService.notifyUsers(usersToNotify, auctionItem)
+
+    await this.notificationsService.notifyUsers(usersToNotify, auctionItem, bids);
   }
+
 
   // NOTE: MAYBE NEEDED ON THE FRONT_END?
   async calculateAuctionTimeRemaining(auctionId: string): Promise<string> {

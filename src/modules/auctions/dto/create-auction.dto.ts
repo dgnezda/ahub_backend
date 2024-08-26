@@ -22,8 +22,4 @@ export class CreateAuctionDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   end_date: Date
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  bids?: Bid[] = []
 }

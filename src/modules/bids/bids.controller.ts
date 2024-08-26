@@ -19,9 +19,10 @@ export class BidsController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createBidDto: CreateBidDto, @GetUserId() userId: string): Promise<Bid> {
     const auctionItemId = createBidDto.auction_item_id
-    const bid = await this.bidsService.create(createBidDto, userId, auctionItemId)
+    // const bid = await this.bidsService.create(createBidDto, userId, auctionItemId)
 
-    return bid
+    // return bid
+    return this.bidsService.update(createBidDto, userId, auctionItemId)
   }
 
   @ApiCreatedResponse({ description: 'Updates bid.' }) // *** FIX ***
