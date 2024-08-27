@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import { Not, IsNull } from 'typeorm'
 import { error } from 'console'
 import { User } from 'entities/user.entity'
 import { PostgresErrorCode } from '../../helpers/postgres-error-code.enum'
@@ -10,10 +11,16 @@ import { compareHash, hash } from '../../utils/bcrypt'
 
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
+import { AuctionItem } from 'entities/auction-item.entity'
+import { AuctionsService } from 'modules/auctions/auctions.service'
+import { BidsService } from 'modules/bids/bids.service'
+import { Bid } from 'entities/bid.entity'
 
 @Injectable()
 export class UsersService extends AbstractService {
-  constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {
+  constructor(
+    @InjectRepository(User) private readonly usersRepository: Repository<User>,
+  ) {
     super(usersRepository)
   }
 

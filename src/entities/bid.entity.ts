@@ -18,11 +18,11 @@ export class Bid extends Base {
   @Column({ nullable: true })
   max_price: number
 
-  @ManyToOne(() => AuctionItem, { onDelete: 'CASCADE' }) //auctionItem => auctionItem.bids,
+  @ManyToOne(() => AuctionItem, auctionItem => auctionItem.bids, { onDelete: 'CASCADE' }) //auctionItem => auctionItem.bids,
   @JoinColumn({ name: 'auction_item_id' })
   auction_item: AuctionItem
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' }) // , user => user.bids
+  @ManyToOne(() => User, user => user.bids, { onDelete: 'CASCADE' }) // , user => user.bids
   @JoinColumn({ name: 'user_id' })
   user: User
 

@@ -24,6 +24,14 @@ export class AuctionsService extends AbstractService {
     super(auctionItemsRepository)
   }
 
+  async getAllAuctions(): Promise<AuctionItem[]> {
+    return this.findAll(['author', 'bids', 'bids.user']);
+  }
+
+  async getAuctionById(id: string): Promise<AuctionItem> {
+    return this.findById(id, ['author', 'bids', 'bids.user']);
+  }
+
   async create(createAuctionDto: CreateAuctionDto, userId: string): Promise<AuctionItem> {
     try {
       let endDate = createAuctionDto.end_date

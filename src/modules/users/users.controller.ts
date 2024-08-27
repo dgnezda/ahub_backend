@@ -20,7 +20,7 @@ import { User } from 'entities/user.entity'
 import { isFileExtensionSafe, removeFile, saveImageToStorage } from '../../helpers/image-storage'
 import { PaginatedResult } from '../../interfaces/paginated-result.interface'
 import { join } from 'path'
-import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBadRequestResponse, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UsersService } from './users.service'
@@ -29,6 +29,7 @@ import { AuctionsService } from 'modules/auctions/auctions.service'
 import { GetUser } from 'decorators/get-user.decorator'
 import { JwtAuthGuard } from 'modules/auth/guards/jwt.guard'
 import { AuctionItem } from 'entities/auction-item.entity'
+import { GetUserId } from 'decorators/get-user-id.decorator'
 
 @ApiTags('users')
 @Controller('users')

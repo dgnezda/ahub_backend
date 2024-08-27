@@ -36,8 +36,6 @@ import { UsersService } from 'modules/users/users.service'
 export class AuctionsController {
   constructor(
     private readonly auctionsService: AuctionsService,
-    // private readonly bidsService: BidsService,
-    // private readonly usersService: UsersService,
   ) {}
 
   // CRUD
@@ -48,7 +46,7 @@ export class AuctionsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async findAll(@Query('page') page: number): Promise<PaginatedResult> {
-    return this.auctionsService.paginate(page)
+    return this.auctionsService.paginate(page, ['author', 'bids', 'bids.user'])
   }
 
   @ApiCreatedResponse({ description: 'Find auction item by ID.' })
@@ -56,7 +54,7 @@ export class AuctionsController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string): Promise<AuctionItem> {
-    return this.auctionsService.findById(id)
+    return this.auctionsService.getAuctionById(id)
   }
 
   @ApiCreatedResponse({ description: 'Creates new auction item.' })
@@ -117,7 +115,7 @@ export class AuctionsController {
   @HttpCode(HttpStatus.OK)
   async findAllActiveAuctions(): Promise<PaginatedResult> {
     //@Query('page') page: number, status: boolean
-    return this.auctionsService.findBy({ where: { is_active: true } })
+    return this.auctionsService.findBy({ where: { is_active: true } }, ['author', 'bids', 'bids.user'])
   }
 
   @ApiCreatedResponse({ description: 'Find winning bid for auction item by ID.' })
