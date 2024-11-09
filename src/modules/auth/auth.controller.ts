@@ -26,6 +26,8 @@ import { ChangePasswordDto } from './dto/change-password.dto'
 import { JwtAuthGuard } from './guards/jwt.guard'
 import { GetUserId } from 'decorators/get-user-id.decorator'
 import { EmailService } from 'modules/email/email.service'
+import getEmailString from 'utils/getEmailString'
+import { UsersService } from 'modules/users/users.service'
 
 @ApiTags('auth')
 @Controller('auth')
@@ -34,6 +36,7 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private emailService: EmailService,
+    private usersService: UsersService,
   ) {}
 
   @ApiCreatedResponse({ description: 'Registers new user.' })
@@ -53,7 +56,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Req() req: RequestWithUser, @Res({ passthrough: true }) res: Response): Promise<User> {
     const access_token = await this.authService.generateJwt(req.user)
-    res.cookie('access_token', access_token, { httpOnly: true })
+    res.cookie('access_token', access_token, { 
+      httpOnly: true, 
+      sameSite: 'strict', // Prevents CSRF attacks
+    })
     return req.user
   }
 
@@ -90,14 +96,15 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   async sendResetPasswordEmail(@Body('email') email: string): Promise<void> {
+    // Find user by email
+    const user = await this.usersService.findBy({ email: email })
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND)
+    }
     const resetToken = await this.authService.generateResetToken(email)
     const resetLink = `https//localhost:8080/reset-pw/${resetToken}`
-    const emailTemplate = `
-      <p>Hello,</p>
-      <p>You have requested to reset your password. Click on the link below to proceed:</p>
-      <a href="${resetLink}">${resetLink}</a>
-      <p>If you did not request this, pleas ignore this email.</p>
-    `
+    const emailTemplate = getEmailString(resetLink)
+
     try {
       await this.emailService.sendMail(email, 'Password Reset Request', emailTemplate)
     } catch (err) {

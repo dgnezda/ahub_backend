@@ -15,7 +15,7 @@ export class DashboardController {
   @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getUserDashboard(@GetUserId() userId: string): Promise<DashboardData> { 
+  async getDashboardData(@GetUserId() userId: string) { 
     return this.dashboardService.getUserDashboard(userId);
   }
 }

@@ -12,6 +12,7 @@ import { BidsModule } from './bids/bids.module'
 import { ScheduleModule } from '@nestjs/schedule'
 import { NotificationsModule } from './notifications/notifications.module'
 import { EmailModule } from './email/email.module'
+import { DashboardModule } from './dashboard/dashboard.module'
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { EmailModule } from './email/email.module'
     ScheduleModule.forRoot(),
     NotificationsModule,
     EmailModule,
+    DashboardModule,
   ],
   controllers: [],
   providers: [],

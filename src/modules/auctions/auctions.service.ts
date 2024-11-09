@@ -109,7 +109,7 @@ export class AuctionsService extends AbstractService {
   async handleAuctionBidsOnAuctionEnd(auctionItem: AuctionItem): Promise<void> {
     const author: User = auctionItem.author;
     const usersToNotify: User[] = [author];
-    const bids = auctionItem.bids;
+    const bids: Bid[] = auctionItem.bids;
 
     for (const bid of bids) {
         bid.status_tag = bid.user.id === auctionItem.winner_id ? BidTag.WON : BidTag.OUTBID;
