@@ -16,6 +16,7 @@ export class DashboardController {
   @Get()
   @HttpCode(HttpStatus.OK)
   async getDashboardData(@GetUserId() userId: string) { 
+    console.log("Getting dashboard data for user with ID:", userId);
     return this.dashboardService.getUserDashboard(userId);
   }
 }

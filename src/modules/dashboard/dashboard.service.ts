@@ -30,7 +30,7 @@ export class DashboardService {
     });
 
     // Log user data for debugging or analytics
-    console.log(user);
+    console.log("I hope this is the right user:\n", user);
 
     // Check if the user exists
     if (!user) {
